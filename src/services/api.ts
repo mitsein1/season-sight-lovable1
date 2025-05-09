@@ -2,7 +2,7 @@
 import { toast } from "sonner";
 
 // Base URL for the API
-const API_BASE_URL = "https://api.example.com"; // Replace with actual API URL
+const API_BASE_URL = "https://price-pattern-backend.onrender.com"; // Updated API URL
 
 // Helper function to handle API responses
 const handleResponse = async <T>(response: Response): Promise<T> => {
