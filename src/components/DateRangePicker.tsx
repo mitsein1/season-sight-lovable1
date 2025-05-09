@@ -56,7 +56,6 @@ export default function DateRangePicker() {
               month={startDate}
               weekStartsOn={1}
               className={cn("p-3 pointer-events-auto")}
-              year={undefined} // Use only month and day
             />
           </PopoverContent>
         </Popover>
@@ -84,7 +83,6 @@ export default function DateRangePicker() {
               month={endDate}
               weekStartsOn={1}
               className={cn("p-3 pointer-events-auto")}
-              year={undefined} // Use only month and day
             />
           </PopoverContent>
         </Popover>
