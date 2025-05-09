@@ -6,6 +6,7 @@ import CumulativeProfitChart from "@/components/CumulativeProfitChart";
 import PatternReturnsChart from "@/components/PatternReturnsChart";
 import StatisticsTable from "@/components/StatisticsTable";
 import MetricsCard from "@/components/MetricsCard";
+import SeasonalityChart from "@/components/SeasonalityChart";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchProfitSummary, fetchGainsLosses, fetchMiscMetrics } from "@/services/api";
 
@@ -106,6 +107,10 @@ export default function Dashboard() {
               }
             />
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 mb-6">
+          <SeasonalityChart />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">

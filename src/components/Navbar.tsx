@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import AssetSelector from "./AssetSelector";
 import DateRangePicker from "./DateRangePicker";
+import YearsBackSelector from "./YearsBackSelector";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { downloadCSV } from "@/services/api";
@@ -34,6 +35,7 @@ export default function Navbar() {
           
           <div className="flex flex-wrap items-center gap-4">
             <AssetSelector />
+            <YearsBackSelector />
             <DateRangePicker />
             <Button 
               variant="outline" 
