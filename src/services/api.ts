@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 
 // Base URL for the API
@@ -71,8 +70,8 @@ export interface MiscMetrics {
 }
 
 export interface Seasonality {
-  day_of_year: number[];
-  average_price: number[];
+  dates: string[];
+  average_prices: number[];
 }
 
 // API functions
@@ -150,9 +149,8 @@ export const fetchSeasonality = async (
 ): Promise<Seasonality> => {
   let url = `${API_BASE_URL}/api/seasonality?asset=${encodeURIComponent(asset)}&years_back=${yearsBack}`;
   
-  if (startDay && endDay) {
-    url += `&start_day=${startDay}&end_day=${endDay}`;
-  }
+  if (startDay) url += `&start_day=${startDay}`;
+  if (endDay) url += `&end_day=${endDay}`;
   
   const response = await fetch(url);
   return handleResponse<Seasonality>(response);

@@ -24,14 +24,14 @@ export default function SeasonalityChart() {
       try {
         const result = await fetchSeasonality(asset, yearsBack, startDay, endDay);
         
-        if (result.day_of_year && result.average_price && 
-            result.day_of_year.length > 0 && 
-            result.average_price.length > 0) {
+        if (result.dates && result.average_prices && 
+            result.dates.length > 0 && 
+            result.average_prices.length > 0) {
           
           // Map the API response to the chart data format
-          const chartData = result.day_of_year.map((day, index) => ({
-            date: day.toString(), // Convert day of year to string for display
-            price: result.average_price[index]
+          const chartData = result.dates.map((date, index) => ({
+            date: date, // Use date string directly from the API
+            price: result.average_prices[index]
           }));
           
           setData(chartData);
@@ -87,7 +87,7 @@ export default function SeasonalityChart() {
           />
           <Tooltip 
             formatter={(value: number) => [`$${value.toFixed(2)}`, "Average Price"]}
-            labelFormatter={(label) => `Day: ${label}`}
+            labelFormatter={(label) => `Date: ${label}`}
           />
           <Line 
             type="monotone" 
