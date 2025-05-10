@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { parse, getDayOfYear } from "date-fns";
 
@@ -112,6 +113,7 @@ export const fetchPatternStatistics = async (
   startDay: string,
   endDay: string
 ): Promise<YearlyStatistic[]> => {
+  // Use the day-of-year format as specified in requirements
   const url = `${API_BASE_URL}/api/pattern-statistics?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
   console.log(`Fetching pattern statistics with URL: ${url}`);
   const response = await fetch(url);
