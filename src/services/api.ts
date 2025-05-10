@@ -1,4 +1,3 @@
-
 import { toast } from "sonner";
 import { parse, getDayOfYear } from "date-fns";
 
@@ -88,13 +87,9 @@ export const fetchCumulativeProfit = async (
   startDay: string,
   endDay: string
 ): Promise<Array<CumulativeProfitItem>> => {
-  // Converti le date "MM-DD" in day-of-year
-  const startDOY = getDayOfYear(parse(startDay, "MM-dd", new Date()));
-  const endDOY = getDayOfYear(parse(endDay, "MM-dd", new Date()));
+  // Use the MM-DD format directly for the API
+  const url = `${API_BASE_URL}/api/cumulative-profit?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
   
-  console.log(`Converting dates: ${startDay} -> ${startDOY}, ${endDay} -> ${endDOY}`);
-  
-  const url = `${API_BASE_URL}/api/cumulative-profit?asset=${encodeURIComponent(asset)}&start_day=${startDOY}&end_day=${endDOY}`;
   console.log(`Fetching cumulative profit with URL: ${url}`);
   
   const response = await fetch(url);
@@ -107,6 +102,7 @@ export const fetchPatternReturns = async (
   endDay: string
 ): Promise<PatternReturn> => {
   const url = `${API_BASE_URL}/api/pattern-returns?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
+  console.log(`Fetching pattern returns with URL: ${url}`);
   const response = await fetch(url);
   return handleResponse<PatternReturn>(response);
 };
@@ -117,6 +113,7 @@ export const fetchPatternStatistics = async (
   endDay: string
 ): Promise<YearlyStatistic[]> => {
   const url = `${API_BASE_URL}/api/pattern-statistics?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
+  console.log(`Fetching pattern statistics with URL: ${url}`);
   const response = await fetch(url);
   return handleResponse<YearlyStatistic[]>(response);
 };
@@ -127,6 +124,7 @@ export const fetchProfitSummary = async (
   endDay: string
 ): Promise<ProfitSummary> => {
   const url = `${API_BASE_URL}/api/profit-summary?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
+  console.log(`Fetching profit summary with URL: ${url}`);
   const response = await fetch(url);
   return handleResponse<ProfitSummary>(response);
 };
@@ -137,6 +135,7 @@ export const fetchGainsLosses = async (
   endDay: string
 ): Promise<GainsLosses> => {
   const url = `${API_BASE_URL}/api/gains-losses?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
+  console.log(`Fetching gains losses with URL: ${url}`);
   const response = await fetch(url);
   return handleResponse<GainsLosses>(response);
 };
@@ -147,6 +146,7 @@ export const fetchMiscMetrics = async (
   endDay: string
 ): Promise<MiscMetrics> => {
   const url = `${API_BASE_URL}/api/misc-metrics?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
+  console.log(`Fetching misc metrics with URL: ${url}`);
   const response = await fetch(url);
   return handleResponse<MiscMetrics>(response);
 };
@@ -162,6 +162,7 @@ export const fetchSeasonality = async (
   if (startDay) url += `&start_day=${startDay}`;
   if (endDay) url += `&end_day=${endDay}`;
   
+  console.log(`Fetching seasonality with URL: ${url}`);
   const response = await fetch(url);
   return handleResponse<Seasonality>(response);
 };

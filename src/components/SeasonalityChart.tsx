@@ -22,7 +22,10 @@ export default function SeasonalityChart() {
       setError(null);
       
       try {
+        console.log(`Fetching seasonality with params: asset=${asset}, yearsBack=${yearsBack}, startDay=${startDay}, endDay=${endDay}`);
         const result = await fetchSeasonality(asset, yearsBack, startDay, endDay);
+        
+        console.log("Seasonality data received:", result);
         
         if (result.dates && result.average_prices && 
             result.dates.length > 0 && 

@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, ReactNode, useCallback, useMemo } from "react";
 import { format } from "date-fns";
 
@@ -20,8 +19,8 @@ const SeasonaxContext = createContext<SeasonaxContextType | undefined>(undefined
 
 export function SeasonaxProvider({ children }: { children: ReactNode }) {
   const [asset, setAsset] = useState("AAPL");
-  const [startDay, setStartDay] = useState("01-01"); // MM-DD format
-  const [endDay, setEndDay] = useState("01-31"); // MM-DD format
+  const [startDay, setStartDay] = useState("01-01"); // MM-DD format (January 1st)
+  const [endDay, setEndDay] = useState("12-31"); // MM-DD format (December 31st)
   const [year, setYear] = useState(new Date().getFullYear());
   const [yearsBack, setYearsBack] = useState(10);
   const [refreshCounter, setRefreshCounter] = useState(0);
