@@ -75,6 +75,7 @@ export default function DateRangePicker() {
   // Update the context when selections change
   useEffect(() => {
     if (validateDateRange()) {
+      // Directly use MM-DD format strings without any conversion
       const formattedStart = `${startMonth}-${startDayValue}`;
       const formattedEnd = `${endMonth}-${endDayValue}`;
       setDateRange(formattedStart, formattedEnd);

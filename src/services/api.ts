@@ -1,6 +1,5 @@
 
 import { toast } from "sonner";
-import { parse, getDayOfYear } from "date-fns";
 
 // Base URL for the API
 const API_BASE_URL = "https://price-pattern-backend.onrender.com"; // Updated API URL
@@ -88,7 +87,7 @@ export const fetchCumulativeProfit = async (
   startDay: string,
   endDay: string
 ): Promise<Array<CumulativeProfitItem>> => {
-  // Use the MM-DD format directly for the API
+  // Use MM-DD format directly without conversion
   const url = `${API_BASE_URL}/api/cumulative-profit?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
   
   console.log(`Fetching cumulative profit with URL: ${url}`);
@@ -113,7 +112,7 @@ export const fetchPatternStatistics = async (
   startDay: string,
   endDay: string
 ): Promise<YearlyStatistic[]> => {
-  // Use the day-of-year format as specified in requirements
+  // Use MM-DD format directly
   const url = `${API_BASE_URL}/api/pattern-statistics?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
   console.log(`Fetching pattern statistics with URL: ${url}`);
   const response = await fetch(url);
@@ -145,9 +144,11 @@ export const fetchGainsLosses = async (
 export const fetchMiscMetrics = async (
   asset: string,
   startDay: string,
-  endDay: string
+  endDay: string,
+  yearsBack: number
 ): Promise<MiscMetrics> => {
-  const url = `${API_BASE_URL}/api/misc-metrics?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
+  // Add years_back parameter
+  const url = `${API_BASE_URL}/api/misc-metrics?asset=${encodeURIComponent(asset)}&years_back=${yearsBack}&start_day=${startDay}&end_day=${endDay}`;
   console.log(`Fetching misc metrics with URL: ${url}`);
   const response = await fetch(url);
   return handleResponse<MiscMetrics>(response);
@@ -159,6 +160,7 @@ export const fetchSeasonality = async (
   startDay?: string,
   endDay?: string
 ): Promise<Seasonality> => {
+  // Use years_back and MM-DD format
   let url = `${API_BASE_URL}/api/seasonality?asset=${encodeURIComponent(asset)}&years_back=${yearsBack}`;
   
   if (startDay) url += `&start_day=${startDay}`;

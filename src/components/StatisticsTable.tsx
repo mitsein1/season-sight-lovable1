@@ -5,7 +5,6 @@ import { fetchPatternStatistics, YearlyStatistic } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
-import { getDayOfYear, parse } from "date-fns";
 
 export default function StatisticsTable() {
   const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
@@ -13,25 +12,14 @@ export default function StatisticsTable() {
   const [data, setData] = useState<YearlyStatistic[] | null>(null);
   const [filteredData, setFilteredData] = useState<YearlyStatistic[] | null>(null);
 
-  // Convert MM-DD format to day-of-year (1-365)
-  const convertToDayOfYear = (mmDd: string): number => {
-    // Create a date using the current year and the MM-DD format
-    const currentYear = new Date().getFullYear();
-    const date = parse(mmDd, "MM-dd", new Date(currentYear, 0, 1));
-    return getDayOfYear(date);
-  };
-
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        // Convert MM-DD to day-of-year as required by the API
-        const startDayOfYear = convertToDayOfYear(startDay);
-        const endDayOfYear = convertToDayOfYear(endDay);
+        // Use startDay and endDay directly as MM-DD strings
+        console.log(`Fetching pattern statistics with: asset=${asset}, startDay=${startDay}, endDay=${endDay}`);
         
-        console.log(`Fetching pattern statistics with: asset=${asset}, startDay=${startDayOfYear}, endDay=${endDayOfYear}`);
-        
-        const result = await fetchPatternStatistics(asset, startDayOfYear.toString(), endDayOfYear.toString());
+        const result = await fetchPatternStatistics(asset, startDay, endDay);
         setData(result);
       } catch (error) {
         console.error("Failed to fetch pattern statistics:", error);

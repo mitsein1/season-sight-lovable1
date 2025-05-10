@@ -11,7 +11,7 @@ import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchProfitSummary, fetchGainsLosses, fetchMiscMetrics } from "@/services/api";
 
 export default function Dashboard() {
-  const { asset, startDay, endDay, refreshCounter } = useSeasonax();
+  const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
   
   const [profitLoading, setProfitLoading] = useState(true);
   const [profitData, setProfitData] = useState<any>(null);
@@ -26,6 +26,7 @@ export default function Dashboard() {
     const loadProfitData = async () => {
       setProfitLoading(true);
       try {
+        // Use MM-DD format directly
         const result = await fetchProfitSummary(asset, startDay, endDay);
         setProfitData(result);
       } catch (error) {
@@ -39,6 +40,7 @@ export default function Dashboard() {
     const loadGainsData = async () => {
       setGainsLoading(true);
       try {
+        // Use MM-DD format directly
         const result = await fetchGainsLosses(asset, startDay, endDay);
         setGainsData(result);
       } catch (error) {
@@ -52,7 +54,8 @@ export default function Dashboard() {
     const loadMiscData = async () => {
       setMiscLoading(true);
       try {
-        const result = await fetchMiscMetrics(asset, startDay, endDay);
+        // Pass years_back as an additional parameter
+        const result = await fetchMiscMetrics(asset, startDay, endDay, yearsBack);
         setMiscData(result);
       } catch (error) {
         console.error("Failed to fetch misc metrics:", error);
@@ -65,7 +68,7 @@ export default function Dashboard() {
     loadProfitData();
     loadGainsData();
     loadMiscData();
-  }, [asset, startDay, endDay, refreshCounter]);
+  }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -94,12 +97,12 @@ export default function Dashboard() {
                   ? [
                       {
                         label: "Total Profit",
-                        value: `${profitData.total_profit.toFixed(2)}%`,
+                        value: `${profitData.total_profit?.toFixed(2)}%`,
                         valueType: profitData.total_profit >= 0 ? "positive" : "negative",
                       },
                       {
                         label: "Average Profit",
-                        value: `${profitData.average_profit.toFixed(2)}%`,
+                        value: `${profitData.average_profit?.toFixed(2)}%`,
                         valueType: profitData.average_profit >= 0 ? "positive" : "negative",
                       },
                     ]
@@ -137,17 +140,17 @@ export default function Dashboard() {
                       },
                       {
                         label: "Profit Percentage",
-                        value: `${gainsData.profit_percentage.toFixed(2)}%`,
+                        value: `${gainsData.profit_percentage?.toFixed(2)}%`,
                         valueType: gainsData.profit_percentage >= 0 ? "positive" : "negative",
                       },
                       {
                         label: "Max Profit",
-                        value: `${gainsData.max_profit.toFixed(2)}%`,
+                        value: `${gainsData.max_profit?.toFixed(2)}%`,
                         valueType: "positive",
                       },
                       {
                         label: "Max Loss",
-                        value: `${gainsData.max_loss.toFixed(2)}%`,
+                        value: `${gainsData.max_loss?.toFixed(2)}%`,
                         valueType: "negative",
                       },
                     ]
@@ -174,22 +177,22 @@ export default function Dashboard() {
                       },
                       {
                         label: "Std Deviation",
-                        value: miscData.std_deviation.toFixed(2),
+                        value: miscData.std_deviation?.toFixed(2),
                         valueType: "neutral",
                       },
                       {
                         label: "Sortino Ratio",
-                        value: miscData.sortino_ratio.toFixed(2),
+                        value: miscData.sortino_ratio?.toFixed(2),
                         valueType: miscData.sortino_ratio >= 0 ? "positive" : "negative",
                       },
                       {
                         label: "Sharpe Ratio",
-                        value: miscData.sharpe_ratio.toFixed(2),
+                        value: miscData.sharpe_ratio?.toFixed(2),
                         valueType: miscData.sharpe_ratio >= 0 ? "positive" : "negative",
                       },
                       {
                         label: "Volatility",
-                        value: miscData.volatility.toFixed(2),
+                        value: miscData.volatility?.toFixed(2),
                         valueType: "neutral",
                       },
                       {
