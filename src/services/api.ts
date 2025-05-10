@@ -1,4 +1,6 @@
+
 import { toast } from "sonner";
+import { parse, getDayOfYear } from "date-fns";
 
 // Base URL for the API
 const API_BASE_URL = "https://price-pattern-backend.onrender.com"; // Updated API URL
@@ -86,7 +88,15 @@ export const fetchCumulativeProfit = async (
   startDay: string,
   endDay: string
 ): Promise<Array<CumulativeProfitItem>> => {
-  const url = `${API_BASE_URL}/api/cumulative-profit?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
+  // Converti le date "MM-DD" in day-of-year
+  const startDOY = getDayOfYear(parse(startDay, "MM-dd", new Date()));
+  const endDOY = getDayOfYear(parse(endDay, "MM-dd", new Date()));
+  
+  console.log(`Converting dates: ${startDay} -> ${startDOY}, ${endDay} -> ${endDOY}`);
+  
+  const url = `${API_BASE_URL}/api/cumulative-profit?asset=${encodeURIComponent(asset)}&start_day=${startDOY}&end_day=${endDOY}`;
+  console.log(`Fetching cumulative profit with URL: ${url}`);
+  
   const response = await fetch(url);
   return handleResponse<Array<CumulativeProfitItem>>(response);
 };

@@ -16,7 +16,9 @@ export default function CumulativeProfitChart() {
     const loadData = async () => {
       setLoading(true);
       try {
+        console.log(`Fetching cumulative profit for ${asset} from ${startDay} to ${endDay}`);
         const result = await fetchCumulativeProfit(asset, startDay, endDay);
+        console.log("Received cumulative profit data:", result);
         setData(result);
         
         // Transform data for chart
@@ -24,6 +26,7 @@ export default function CumulativeProfitChart() {
           year: item.year,
           profit: item.cumulative_profit
         }));
+        console.log("Transformed chart data:", formattedData);
         setChartData(formattedData);
       } catch (error) {
         console.error("Failed to fetch cumulative profit:", error);
@@ -55,7 +58,8 @@ export default function CumulativeProfitChart() {
       <CardContent>
         {loading && <div className="flex justify-center items-center h-64">Loading...</div>}
         {!loading && !data && <div className="flex justify-center items-center h-64">No data available</div>}
-        {!loading && data && (
+        {!loading && data && data.length === 0 && <div className="flex justify-center items-center h-64">No data available</div>}
+        {!loading && data && data.length > 0 && (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
