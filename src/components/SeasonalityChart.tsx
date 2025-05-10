@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface ChartData {
   date: string;
-  price: number;
+  value: number;
 }
 
 export default function SeasonalityChart() {
@@ -22,19 +22,16 @@ export default function SeasonalityChart() {
       setError(null);
       
       try {
-        console.log(`Fetching seasonality with params: asset=${asset}, yearsBack=${yearsBack}, startDay=${startDay}, endDay=${endDay}`);
         const result = await fetchSeasonality(asset, yearsBack, startDay, endDay);
-        
-        console.log("Seasonality data received:", result);
         
         if (result.dates && result.average_prices && 
             result.dates.length > 0 && 
             result.average_prices.length > 0) {
           
-          // Map the API response to the chart data format
+          // Map the API response to the chart data format and scale to percentage
           const chartData = result.dates.map((date, index) => ({
-            date: date, // Use date string directly from the API
-            price: result.average_prices[index]
+            date: date,
+            value: result.average_prices[index] * 100
           }));
           
           setData(chartData);
@@ -85,16 +82,17 @@ export default function SeasonalityChart() {
             tickFormatter={(value) => value}
           />
           <YAxis 
-            domain={["auto", "auto"]} 
+            domain={["dataMin", "dataMax"]} 
+            tickFormatter={(v) => `${v.toFixed(1)}%`}
             tick={{ fontSize: 10 }}
           />
           <Tooltip 
-            formatter={(value: number) => [`$${value.toFixed(2)}`, "Average Price"]}
+            formatter={(value: number) => [`${value.toFixed(2)}%`, "Average Price"]}
             labelFormatter={(label) => `Date: ${label}`}
           />
           <Line 
             type="monotone" 
-            dataKey="price" 
+            dataKey="value" 
             stroke="#3b82f6" 
             dot={false} 
             strokeWidth={2}
