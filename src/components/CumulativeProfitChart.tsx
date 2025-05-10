@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
-import { fetchCumulativeProfit, CumulativeProfit } from "@/services/api";
+import { fetchCumulativeProfit, CumulativeProfitItem } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import { toast } from "sonner";
@@ -9,7 +9,7 @@ import { toast } from "sonner";
 export default function CumulativeProfitChart() {
   const { asset, startDay, endDay, refreshCounter } = useSeasonax();
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<CumulativeProfit | null>(null);
+  const [data, setData] = useState<Array<CumulativeProfitItem> | null>(null);
   const [chartData, setChartData] = useState<{ year: number; profit: number }[]>([]);
 
   useEffect(() => {
@@ -20,9 +20,9 @@ export default function CumulativeProfitChart() {
         setData(result);
         
         // Transform data for chart
-        const formattedData = result.year.map((year, index) => ({
-          year: year,
-          profit: result.profit[index],
+        const formattedData = result.map(item => ({
+          year: item.year,
+          profit: item.cumulative_profit
         }));
         setChartData(formattedData);
       } catch (error) {

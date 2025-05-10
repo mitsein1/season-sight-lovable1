@@ -18,13 +18,13 @@ const handleResponse = async <T>(response: Response): Promise<T> => {
 
 // Types for API responses
 export interface PriceSeries {
-  date: string[];
-  price: number[];
+  dates: string[];
+  prices: number[];
 }
 
-export interface CumulativeProfit {
-  year: number[];
-  profit: number[];
+export interface CumulativeProfitItem {
+  year: number;
+  cumulative_profit: number;
 }
 
 export interface PatternReturn {
@@ -85,10 +85,10 @@ export const fetchCumulativeProfit = async (
   asset: string,
   startDay: string,
   endDay: string
-): Promise<CumulativeProfit> => {
+): Promise<Array<CumulativeProfitItem>> => {
   const url = `${API_BASE_URL}/api/cumulative-profit?asset=${encodeURIComponent(asset)}&start_day=${startDay}&end_day=${endDay}`;
   const response = await fetch(url);
-  return handleResponse<CumulativeProfit>(response);
+  return handleResponse<Array<CumulativeProfitItem>>(response);
 };
 
 export const fetchPatternReturns = async (

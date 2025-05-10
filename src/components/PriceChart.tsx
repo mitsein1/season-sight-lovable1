@@ -20,9 +20,9 @@ export default function PriceChart() {
         setData(result);
         
         // Transform data for chart
-        const formattedData = result.date.map((date, index) => ({
+        const formattedData = result.dates.map((date, index) => ({
           date: date,
-          price: result.price[index],
+          price: result.prices[index],
         }));
         setChartData(formattedData);
       } catch (error) {
