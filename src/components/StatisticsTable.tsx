@@ -81,31 +81,31 @@ export default function StatisticsTable() {
                     <TableCell>{row.start_date}</TableCell>
                     <TableCell>{row.end_date}</TableCell>
                     <TableCell className="text-right">
-                      {row.start_price.toLocaleString(undefined, {
+                      {row.start_price !== undefined ? row.start_price.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
-                      })}
+                      }) : "N/A"}
                     </TableCell>
                     <TableCell className="text-right">
-                      {row.end_price.toLocaleString(undefined, {
+                      {row.end_price !== undefined ? row.end_price.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
-                      })}
+                      }) : "N/A"}
                     </TableCell>
                     <TableCell className="text-right">
-                      {row.profit.toLocaleString(undefined, {
+                      {row.profit !== undefined ? row.profit.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
-                      })}
+                      }) : "N/A"}
                     </TableCell>
-                    <TableCell className={`text-right ${row.profit_percentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {row.profit_percentage.toFixed(2)}%
+                    <TableCell className={`text-right ${row.profit_percentage !== undefined ? (row.profit_percentage >= 0 ? 'text-green-600' : 'text-red-600') : ''}`}>
+                      {row.profit_percentage !== undefined ? `${row.profit_percentage.toFixed(2)}%` : "N/A"}
                     </TableCell>
                     <TableCell className="text-right text-green-600">
-                      {row.max_rise.toFixed(2)}%
+                      {row.max_rise !== undefined ? `${row.max_rise.toFixed(2)}%` : "N/A"}
                     </TableCell>
                     <TableCell className="text-right text-red-600">
-                      {row.max_drop.toFixed(2)}%
+                      {row.max_drop !== undefined ? `${row.max_drop.toFixed(2)}%` : "N/A"}
                     </TableCell>
                   </TableRow>
                 ))}
