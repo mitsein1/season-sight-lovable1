@@ -8,9 +8,10 @@ import { toast } from "sonner";
 import { getDayOfYear, parse } from "date-fns";
 
 export default function StatisticsTable() {
-  const { asset, startDay, endDay, refreshCounter } = useSeasonax();
+  const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<YearlyStatistic[] | null>(null);
+  const [filteredData, setFilteredData] = useState<YearlyStatistic[] | null>(null);
 
   // Convert MM-DD format to day-of-year (1-365)
   const convertToDayOfYear = (mmDd: string): number => {
@@ -44,21 +45,36 @@ export default function StatisticsTable() {
     loadData();
   }, [asset, startDay, endDay, refreshCounter]);
 
+  // Filter data based on yearsBack
+  useEffect(() => {
+    if (!data) {
+      setFilteredData(null);
+      return;
+    }
+
+    const currentYear = new Date().getFullYear();
+    const filteredByYears = data.filter(item => {
+      return item.year >= (currentYear - yearsBack);
+    });
+
+    setFilteredData(filteredByYears);
+  }, [data, yearsBack]);
+
   return (
     <Card className="seasonax-card h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">
-          Yearly Statistics ({startDay} - {endDay})
+          Yearly Statistics ({startDay} - {endDay}) - Last {yearsBack} years
         </CardTitle>
       </CardHeader>
       <CardContent>
         {loading && <div className="flex justify-center items-center h-64">Loading...</div>}
-        {!loading && (!data || data.length === 0) && (
+        {!loading && (!filteredData || filteredData.length === 0) && (
           <div className="flex justify-center items-center h-64">
             No data available
           </div>
         )}
-        {!loading && data && data.length > 0 && (
+        {!loading && filteredData && filteredData.length > 0 && (
           <div className="overflow-auto max-h-96">
             <Table>
               <TableHeader className="sticky top-0 bg-card z-10">
@@ -75,7 +91,7 @@ export default function StatisticsTable() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data.map((row) => (
+                {filteredData.map((row) => (
                   <TableRow key={row.year}>
                     <TableCell className="font-medium">{row.year}</TableCell>
                     <TableCell>{row.start_date}</TableCell>
