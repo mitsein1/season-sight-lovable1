@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 import { parse, getDayOfYear } from "date-fns";
 
@@ -37,12 +38,12 @@ export interface YearlyStatistic {
   year: number;
   start_date: string;
   end_date: string;
-  start_price: number;
-  end_price: number;
-  profit: number;
-  profit_percentage: number;
-  max_rise: number;
-  max_drop: number;
+  start_price?: number;
+  end_price?: number;
+  profit?: number;
+  profit_percentage?: number;
+  max_rise?: number;
+  max_drop?: number;
 }
 
 export interface ProfitSummary {

@@ -94,8 +94,8 @@ export default function StatisticsTable() {
                 {filteredData.map((row) => (
                   <TableRow key={row.year}>
                     <TableCell className="font-medium">{row.year}</TableCell>
-                    <TableCell>{row.start_date}</TableCell>
-                    <TableCell>{row.end_date}</TableCell>
+                    <TableCell>{row.start_date || "N/A"}</TableCell>
+                    <TableCell>{row.end_date || "N/A"}</TableCell>
                     <TableCell className="text-right">
                       {row.start_price !== undefined ? row.start_price.toLocaleString(undefined, {
                         minimumFractionDigits: 2,
