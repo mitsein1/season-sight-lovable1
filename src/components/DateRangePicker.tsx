@@ -62,7 +62,7 @@ export default function DateRangePicker() {
                 // Check if the current year is the reference year
                 return date.getFullYear() !== referenceYear;
               }}
-              month={startDate}
+              month={startDate || new Date(referenceYear, 0, 1)}
               fromMonth={new Date(referenceYear, 0)} // January
               toMonth={new Date(referenceYear, 11)} // December
               defaultMonth={new Date(referenceYear, 0)}
@@ -97,7 +97,7 @@ export default function DateRangePicker() {
                 // Check if the current year is the reference year
                 return date.getFullYear() !== referenceYear;
               }}
-              month={endDate}
+              month={endDate || new Date(referenceYear, 0, 1)}
               fromMonth={new Date(referenceYear, 0)} // January
               toMonth={new Date(referenceYear, 11)} // December
               defaultMonth={new Date(referenceYear, 0)}
