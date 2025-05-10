@@ -14,11 +14,15 @@ import { cn } from "@/lib/utils";
 
 export default function DateRangePicker() {
   const { startDay, endDay, setDateRange, refreshData } = useSeasonax();
+  
+  // Create a reference year for parsing dates (using 2000 as a leap year to handle Feb 29)
+  const referenceYear = 2000;
+  
   const [startDate, setStartDate] = useState<Date | undefined>(
-    parse(startDay, "MM-dd", new Date())
+    parse(startDay, "MM-dd", new Date(referenceYear, 0, 1))
   );
   const [endDate, setEndDate] = useState<Date | undefined>(
-    parse(endDay, "MM-dd", new Date())
+    parse(endDay, "MM-dd", new Date(referenceYear, 0, 1))
   );
 
   useEffect(() => {
@@ -52,8 +56,16 @@ export default function DateRangePicker() {
               mode="single"
               selected={startDate}
               onSelect={setStartDate}
-              disabled={(date) => date > endDate!}
+              disabled={(date) => {
+                // Only disable if after end date
+                if (endDate && date > endDate) return true;
+                // Check if the current year is the reference year
+                return date.getFullYear() !== referenceYear;
+              }}
               month={startDate}
+              fromMonth={new Date(referenceYear, 0)} // January
+              toMonth={new Date(referenceYear, 11)} // December
+              defaultMonth={new Date(referenceYear, 0)}
               weekStartsOn={1}
               className={cn("p-3 pointer-events-auto")}
             />
@@ -79,8 +91,16 @@ export default function DateRangePicker() {
               mode="single"
               selected={endDate}
               onSelect={setEndDate}
-              disabled={(date) => date < startDate!}
+              disabled={(date) => {
+                // Only disable if before start date
+                if (startDate && date < startDate) return true;
+                // Check if the current year is the reference year
+                return date.getFullYear() !== referenceYear;
+              }}
               month={endDate}
+              fromMonth={new Date(referenceYear, 0)} // January
+              toMonth={new Date(referenceYear, 11)} // December
+              defaultMonth={new Date(referenceYear, 0)}
               weekStartsOn={1}
               className={cn("p-3 pointer-events-auto")}
             />
