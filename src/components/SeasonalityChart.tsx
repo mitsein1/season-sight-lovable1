@@ -51,6 +51,22 @@ export default function SeasonalityChart() {
     loadData();
   }, [asset, yearsBack, startDay, endDay]);
 
+  // Calculate custom domain for Y-axis to make the curve more natural
+  const calculateYAxisDomain = () => {
+    if (!data || data.length === 0) return ["dataMin", "dataMax"];
+    
+    const values = data.map(item => item.value);
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const range = max - min;
+    
+    // Make the range tighter to create a smoother curve appearance
+    // Reduce the padding to make the curve appear more pronounced
+    const padding = range * 0.2; // Reduced padding (was 1.0 by default)
+    
+    return [min - padding, max + padding];
+  };
+
   if (loading) {
     return (
       <div className="rounded-lg border bg-card p-4 h-[300px] flex items-center justify-center">
@@ -82,9 +98,11 @@ export default function SeasonalityChart() {
             tickFormatter={(value) => value}
           />
           <YAxis 
-            domain={["dataMin", "dataMax"]} 
+            domain={calculateYAxisDomain()}
             tickFormatter={(v) => `${v.toFixed(1)}%`}
             tick={{ fontSize: 10 }}
+            allowDecimals={true}
+            tickCount={8}
           />
           <Tooltip 
             formatter={(value: number) => [`${value.toFixed(2)}%`, "Average Price"]}
