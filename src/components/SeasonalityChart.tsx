@@ -23,18 +23,45 @@ export default function SeasonalityChart() {
       try {
         const result = await fetchSeasonality(asset, yearsBack, startDay, endDay);
 
-        if (result.dates && result.average_prices &&
+        if (
+          result.dates &&
+          result.average_prices &&
           result.dates.length > 0 &&
-          result.average_prices.length > 0) {
-
-          const prices = result.average_prices;
-          const min = Math.min(...prices);
-          const max = Math.max(...prices);
+          result.average_prices.length > 0
+        ) {
+          const rawValues = result.average_prices;
+          const minVal = Math.min(...rawValues);
+          const maxVal = Math.max(...rawValues);
+          const range = maxVal - minVal || 1; // evita divisione per zero
 
           const chartData = result.dates.map((date, index) => ({
             date: date,
-            value: ((prices[index] - min) / (max - min)) * 100,
+            value: ((rawValues[index] - minVal) / range) * 100,
           }));
+
+          setData(chartData);
+        } else {
+          setData([]);
+          setError("No seasonality data available");
+        }
+      } catch (err) {
+        console.error("Failed to fetch seasonality data:", err);
+        setData([]);
+        setError("Failed to load seasonality data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, [asset, yearsBack, startDay, endDay]);
+
+  return (
+    // il resto del componente rimane invariato
+  );
+}
+
+
 
           setData(chartData);
         } else {
