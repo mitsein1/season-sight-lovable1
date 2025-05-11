@@ -22,7 +22,7 @@ export default function SeasonalityChart() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ChartData[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [normalization, setNormalization] = useState<number>(100); // valore base 100
+  const [compression, setCompression] = useState<number>(0.01); // <<--- compressione estrema
 
   useEffect(() => {
     const loadData = async () => {
@@ -38,10 +38,9 @@ export default function SeasonalityChart() {
           result.dates.length > 0 &&
           result.average_prices.length > 0
         ) {
-          const base = result.average_prices[0] || 1;
           const chartData = result.dates.map((date, index) => ({
             date: date,
-            value: (result.average_prices[index] / base) * normalization,
+            value: result.average_prices[index] * compression,
           }));
 
           setData(chartData);
@@ -59,7 +58,7 @@ export default function SeasonalityChart() {
     };
 
     loadData();
-  }, [asset, yearsBack, startDay, endDay, normalization]);
+  }, [asset, yearsBack, startDay, endDay, compression]);
 
   if (loading) {
     return (
@@ -85,17 +84,17 @@ export default function SeasonalityChart() {
     <div className="rounded-lg border bg-card p-4">
       <h3 className="text-lg font-semibold mb-2">Seasonality Analysis</h3>
       <p className="text-sm text-muted-foreground mb-4">
-        Normalized average pattern over last {yearsBack} years
+        Curve scaled with compression factor: {compression}
       </p>
 
       <div className="mb-4">
-        <label className="text-sm font-medium">Normalization Base: {normalization}</label>
+        <label className="text-sm font-medium">Adjust Compression</label>
         <Slider
-          min={10}
-          max={200}
-          step={1}
-          defaultValue={[normalization]}
-          onValueChange={(value) => setNormalization(value[0])}
+          min={0.001}
+          max={0.1}
+          step={0.001}
+          defaultValue={[compression]}
+          onValueChange={(value) => setCompression(value[0])}
         />
       </div>
 
@@ -108,12 +107,12 @@ export default function SeasonalityChart() {
             tickFormatter={(value) => value}
           />
           <YAxis
-            tickFormatter={(v) => `${v.toFixed(2)}%`}
+            tickFormatter={(v) => `${v.toFixed(2)}`}
             tick={{ fontSize: 10 }}
             allowDecimals={true}
           />
           <Tooltip
-            formatter={(value: number) => [`${value.toFixed(2)}%`, "Average"]}
+            formatter={(value: number) => [`${value.toFixed(4)}`, "Average"]}
             labelFormatter={(label) => `Date: ${label}`}
           />
           <Line
@@ -128,7 +127,7 @@ export default function SeasonalityChart() {
         </LineChart>
       </ResponsiveContainer>
       <div className="flex justify-between text-xs text-muted-foreground mt-2">
-        <div>Range: {min.toFixed(2)} to {max.toFixed(2)}</div>
+        <div>Range: {min.toFixed(4)} → {max.toFixed(4)}</div>
         <div>
           Data from {new Date().getFullYear() - yearsBack} to {new Date().getFullYear() - 1}
         </div>
