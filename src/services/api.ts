@@ -1,7 +1,7 @@
 import { toast } from "sonner";
 
 // Base URL for the API
-const API_BASE_URL = "https://price-pattern-backend.onrender.com"; // Updated API URL
+const API_BASE_URL = "https://price-pattern-backend.onrender.com";
 
 // Helper function to handle API responses
 const handleResponse = async <T>(response: Response): Promise<T> => {
@@ -26,7 +26,6 @@ export interface CumulativeProfitItem {
   cumulative_profit: number;
 }
 
-// --- sostituito PatternReturn con questo singolo item ---
 export interface PatternReturnItem {
   year: number;
   return: number;
@@ -60,7 +59,7 @@ export interface GainsLosses {
 
 export interface MiscMetrics {
   trades:         number;
-  calendar_days:  number;
+  calendar_days:  number | null;
   std_dev:        number;
   sortino_ratio:  number;
   sharpe_ratio:   number;
@@ -194,6 +193,8 @@ export const fetchSeasonality = async (
   const response = await fetch(url);
   return handleResponse<Seasonality>(response);
 };
+
+// Lista degli asset per il dropdown
 export const availableAssets = [
   { value: "AAPL",    label: "Apple Inc. (AAPL)" },
   { value: "MSFT",    label: "Microsoft Corp. (MSFT)" },
