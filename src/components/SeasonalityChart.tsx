@@ -23,23 +23,21 @@ export default function SeasonalityChart() {
       try {
         const result = await fetchSeasonality(asset, yearsBack, startDay, endDay);
 
-        if (result.dates && result.average_prices &&
+        if (
+          result.dates &&
+          result.average_prices &&
           result.dates.length > 0 &&
-          result.average_prices.length > 0) {
-
-          const prices = result.average_prices;
-          const min = Math.min(...prices);
-          const max = Math.max(...prices);
-
+          result.average_prices.length > 0
+        ) {
           const rawValues = result.average_prices;
-const minVal = Math.min(...rawValues);
-const maxVal = Math.max(...rawValues);
-const range = maxVal - minVal || 1; // evita divisione per zero
+          const minVal = Math.min(...rawValues);
+          const maxVal = Math.max(...rawValues);
+          const range = maxVal - minVal || 1; // evita divisione per zero
 
-const chartData = result.dates.map((date, index) => ({
-  date: date,
-  value: ((rawValues[index] - minVal) / range) * 100 // valori compressi tra 0 e 100
-}));
+          const chartData = result.dates.map((date, index) => ({
+            date: date,
+            value: ((rawValues[index] - minVal) / range) * 100 // valori compressi tra 0 e 100
+          }));
 
 
 
