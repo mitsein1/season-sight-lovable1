@@ -10,6 +10,7 @@ import {
 import { fetchSeasonality } from "@/services/api";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Slider } from "@/components/ui/slider"; // Importa lo slider
 
 interface ChartData {
   date: string;
@@ -21,9 +22,7 @@ export default function SeasonalityChart() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<ChartData[]>([]);
   const [error, setError] = useState<string | null>(null);
-
-  // Coefficiente di normalizzazione per "schiacciare" la curva
-  const NORMALIZATION_COEFFICIENT = 100; // <-- puoi modificare questo valore
+  const [normalization, setNormalization] = useState<number>(100); // valore base 100
 
   useEffect(() => {
     const loadData = async () => {
@@ -39,9 +38,10 @@ export default function SeasonalityChart() {
           result.dates.length > 0 &&
           result.average_prices.length > 0
         ) {
+          const base = result.average_prices[0] || 1;
           const chartData = result.dates.map((date, index) => ({
             date: date,
-            value: result.average_prices[index] / NORMALIZATION_COEFFICIENT,
+            value: (result.average_prices[index] / base) * normalization,
           }));
 
           setData(chartData);
@@ -59,7 +59,7 @@ export default function SeasonalityChart() {
     };
 
     loadData();
-  }, [asset, yearsBack, startDay, endDay]);
+  }, [asset, yearsBack, startDay, endDay, normalization]);
 
   if (loading) {
     return (
@@ -85,8 +85,20 @@ export default function SeasonalityChart() {
     <div className="rounded-lg border bg-card p-4">
       <h3 className="text-lg font-semibold mb-2">Seasonality Analysis</h3>
       <p className="text-sm text-muted-foreground mb-4">
-        Average pattern (visually normalized) over last {yearsBack} years
+        Normalized average pattern over last {yearsBack} years
       </p>
+
+      <div className="mb-4">
+        <label className="text-sm font-medium">Normalization Base: {normalization}</label>
+        <Slider
+          min={10}
+          max={200}
+          step={1}
+          defaultValue={[normalization]}
+          onValueChange={(value) => setNormalization(value[0])}
+        />
+      </div>
+
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
           <XAxis
@@ -116,7 +128,7 @@ export default function SeasonalityChart() {
         </LineChart>
       </ResponsiveContainer>
       <div className="flex justify-between text-xs text-muted-foreground mt-2">
-        <div>Range: {min.toFixed(2)}% to {max.toFixed(2)}%</div>
+        <div>Range: {min.toFixed(2)} to {max.toFixed(2)}</div>
         <div>
           Data from {new Date().getFullYear() - yearsBack} to {new Date().getFullYear() - 1}
         </div>
