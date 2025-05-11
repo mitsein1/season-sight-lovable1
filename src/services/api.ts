@@ -176,23 +176,22 @@ export const fetchProfitSummary = async (
 };
 
 export const fetchGainsLosses = async (
-  asset:    string,
-  startDay: string,
-  endDay:   string,
+  asset:     string,
+  startDay:  string,
+  endDay:    string,
   yearsBack?: number
 ): Promise<GainsLosses> => {
-  const params = new URLSearchParams({
-    asset,
-    start_day: encodeURIComponent(startDay),
-    end_day: encodeURIComponent(endDay),
-  });
+  let url =
+    `${API_BASE_URL}/api/gains-losses` +
+    `?asset=${encodeURIComponent(asset)}` +
+    `&start_day=${encodeURIComponent(startDay)}` +
+    `&end_day=${encodeURIComponent(endDay)}`;
 
   if (yearsBack !== undefined) {
-    params.append("years_back", yearsBack.toString());
+    url += `&years_back=${yearsBack}`;
   }
 
-  const url = `${API_BASE_URL}/api/gains-losses?${params.toString()}`;
-  console.log(`Fetching gains & losses with URL: ${url}`);
+  console.log("Fetching gains & losses with URL:", url);
   const response = await fetch(url);
   return handleResponse<GainsLosses>(response);
 };
