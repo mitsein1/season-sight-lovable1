@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchGainsLosses } from "@/services/api";
@@ -5,7 +6,7 @@ import MetricsCard from "@/components/MetricsCard";
 import { toast } from "sonner";
 
 export default function GainsLossesCard() {
-  const { asset, startDay, endDay, refreshCounter } = useSeasonax();
+  const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<{
     gains: number;
@@ -20,7 +21,7 @@ export default function GainsLossesCard() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const result = await fetchGainsLosses(asset, startDay, endDay);
+        const result = await fetchGainsLosses(asset, startDay, endDay, yearsBack);
         setData(result);
       } catch (error) {
         console.error("Failed to fetch gains/losses:", error);
@@ -32,7 +33,7 @@ export default function GainsLossesCard() {
     };
 
     loadData();
-  }, [asset, startDay, endDay, refreshCounter]);
+  }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
   return (
     <MetricsCard
