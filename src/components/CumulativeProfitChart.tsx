@@ -7,7 +7,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { toast } from "sonner";
 
 export default function CumulativeProfitChart() {
-  const { asset, startDay, endDay, refreshCounter } = useSeasonax();
+  const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<Array<CumulativeProfitItem> | null>(null);
   const [chartData, setChartData] = useState<{ year: number; profit: number }[]>([]);
@@ -26,8 +26,15 @@ export default function CumulativeProfitChart() {
           year: item.year,
           profit: item.cumulative_profit
         }));
-        console.log("Transformed chart data:", formattedData);
-        setChartData(formattedData);
+        
+        // Filter by yearsBack
+        const currentYear = new Date().getFullYear();
+        const filteredData = formattedData.filter(item => 
+          item.year >= (currentYear - yearsBack)
+        );
+        
+        console.log("Transformed and filtered chart data:", filteredData);
+        setChartData(filteredData);
       } catch (error) {
         console.error("Failed to fetch cumulative profit:", error);
         toast.error("Failed to load cumulative profit data");
@@ -38,7 +45,7 @@ export default function CumulativeProfitChart() {
     };
 
     loadData();
-  }, [asset, startDay, endDay, refreshCounter]);
+  }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
   const formatYAxis = (value: number) => {
     return `${value.toFixed(2)}%`;

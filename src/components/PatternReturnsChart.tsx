@@ -7,7 +7,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { toast } from "sonner";
 
 export default function PatternReturnsChart() {
-  const { asset, startDay, endDay, refreshCounter } = useSeasonax();
+  const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<PatternReturn | null>(null);
   const [chartData, setChartData] = useState<{ year: number; return: number }[]>([]);
@@ -24,7 +24,14 @@ export default function PatternReturnsChart() {
           year: year,
           return: result.return[index],
         }));
-        setChartData(formattedData);
+        
+        // Filter by yearsBack
+        const currentYear = new Date().getFullYear();
+        const filteredData = formattedData.filter(item => 
+          item.year >= (currentYear - yearsBack)
+        );
+        
+        setChartData(filteredData);
       } catch (error) {
         console.error("Failed to fetch pattern returns:", error);
         toast.error("Failed to load pattern return data");
@@ -35,7 +42,7 @@ export default function PatternReturnsChart() {
     };
 
     loadData();
-  }, [asset, startDay, endDay, refreshCounter]);
+  }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
   const formatYAxis = (value: number) => {
     return `${value.toFixed(2)}%`;

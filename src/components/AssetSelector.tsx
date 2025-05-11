@@ -1,19 +1,20 @@
 
+import { useState } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { availableAssets } from "@/services/api";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function AssetSelector() {
   const { asset, setAsset, refreshData } = useSeasonax();
+  const [open, setOpen] = useState(false);
 
-  const handleChange = (value: string) => {
+  const handleSelect = (value: string) => {
     setAsset(value);
+    setOpen(false);
     refreshData();
   };
 
@@ -22,18 +23,42 @@ export default function AssetSelector() {
       <label htmlFor="asset-select" className="seasonax-label whitespace-nowrap">
         Asset:
       </label>
-      <Select value={asset} onValueChange={handleChange}>
-        <SelectTrigger id="asset-select" className="w-[180px]">
-          <SelectValue placeholder="Select asset" />
-        </SelectTrigger>
-        <SelectContent>
-          {availableAssets.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Input
+            id="asset-select"
+            className="w-[180px]"
+            value={asset}
+            onChange={(e) => {
+              setAsset(e.target.value.toUpperCase());
+            }}
+            onFocus={() => setOpen(true)}
+          />
+        </PopoverTrigger>
+        <PopoverContent className="w-[180px] p-0">
+          <Command>
+            <CommandInput placeholder="Cerca asset..." />
+            <CommandEmpty>Nessun asset trovato.</CommandEmpty>
+            <CommandGroup>
+              {availableAssets.map((option) => (
+                <CommandItem
+                  key={option.value}
+                  value={option.value}
+                  onSelect={handleSelect}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      asset === option.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {option.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }

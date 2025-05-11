@@ -1,69 +1,39 @@
 
 import { useState, useEffect } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { format, parse } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function DateRangePicker() {
   const { startDay, endDay, setDateRange, refreshData } = useSeasonax();
   
-  // Parse the initial values from context (MM-DD format)
-  const [startMonth, setStartMonth] = useState(startDay.split("-")[0] || "01");
-  const [startDayValue, setStartDayValue] = useState(startDay.split("-")[1] || "01");
-  const [endMonth, setEndMonth] = useState(endDay.split("-")[0] || "01");
-  const [endDayValue, setEndDayValue] = useState(endDay.split("-")[1] || "31");
-  
-  // Error state
-  const [error, setError] = useState<string | null>(null);
+  // Parse MM-DD format to Date objects
+  const parseDate = (dateStr: string): Date => {
+    const currentYear = new Date().getFullYear();
+    return parse(`${currentYear}-${dateStr}`, 'yyyy-MM-dd', new Date());
+  };
 
-  // Generate month options
-  const months = Array.from({ length: 12 }, (_, i) => {
-    const month = (i + 1).toString().padStart(2, "0");
-    return { value: month, label: getMonthName(month) };
-  });
+  const [startDate, setStartDate] = useState<Date>(parseDate(startDay));
+  const [endDate, setEndDate] = useState<Date>(parseDate(endDay));
+  const [selectingEnd, setSelectingEnd] = useState(false);
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
-  // Get days in month
-  const getDaysInMonth = (month: string) => {
-    const daysMap: Record<string, number> = {
-      "01": 31, "02": 29, "03": 31, "04": 30, 
-      "05": 31, "06": 30, "07": 31, "08": 31,
-      "09": 30, "10": 31, "11": 30, "12": 31
-    };
-    return daysMap[month] || 31;
-  };
-  
-  // Generate day options based on selected month
-  const generateDayOptions = (month: string) => {
-    const daysInMonth = getDaysInMonth(month);
-    return Array.from({ length: daysInMonth }, (_, i) => {
-      const day = (i + 1).toString().padStart(2, "0");
-      return { value: day, label: day };
-    });
-  };
-  
-  // Helper function to get month name
-  function getMonthName(month: string): string {
-    const monthNames = [
-      "Gennaio", "Febbraio", "Marzo", "Aprile", 
-      "Maggio", "Giugno", "Luglio", "Agosto",
-      "Settembre", "Ottobre", "Novembre", "Dicembre"
-    ];
-    return monthNames[parseInt(month, 10) - 1];
-  }
-  
-  // Convert selections to numeric keys for comparison
+  // Validate date range
   const validateDateRange = () => {
-    const startKey = parseInt(`${startMonth}${startDayValue}`, 10);
-    const endKey = parseInt(`${endMonth}${endDayValue}`, 10);
+    // Get day of year for both dates (ignoring year)
+    const startMonth = startDate.getMonth();
+    const startDayOfMonth = startDate.getDate();
+    const endMonth = endDate.getMonth();
+    const endDayOfMonth = endDate.getDate();
     
-    if (startKey > endKey) {
+    if (startMonth > endMonth || (startMonth === endMonth && startDayOfMonth > endDayOfMonth)) {
       setError("La data di inizio deve essere prima della data di fine");
       return false;
     }
@@ -72,83 +42,74 @@ export default function DateRangePicker() {
     return true;
   };
   
-  // Update the context when selections change
+  // Handle date selection
+  const handleDateSelect = (date: Date | undefined) => {
+    if (!date) return;
+    
+    if (!selectingEnd) {
+      setStartDate(date);
+      setSelectingEnd(true);
+    } else {
+      setEndDate(date);
+      setSelectingEnd(false);
+      setShowCalendar(false);
+    }
+  };
+  
+  // Update the context when dates change
   useEffect(() => {
     if (validateDateRange()) {
-      // Directly use MM-DD format strings without any conversion
-      const formattedStart = `${startMonth}-${startDayValue}`;
-      const formattedEnd = `${endMonth}-${endDayValue}`;
+      const formattedStart = format(startDate, 'MM-dd');
+      const formattedEnd = format(endDate, 'MM-dd');
       setDateRange(formattedStart, formattedEnd);
       refreshData();
     }
-  }, [startMonth, startDayValue, endMonth, endDayValue, setDateRange, refreshData]);
-
+  }, [startDate, endDate, setDateRange, refreshData]);
+  
   return (
     <div className="flex items-center gap-2">
       <span className="seasonax-label">Periodo:</span>
-      <div className="flex items-center gap-2">
-        {/* Start Date Selectors */}
-        <div className="flex items-center gap-1">
-          <Select value={startMonth} onValueChange={setStartMonth}>
-            <SelectTrigger className="w-[110px]">
-              <SelectValue placeholder="Mese" />
-            </SelectTrigger>
-            <SelectContent>
-              {months.map((month) => (
-                <SelectItem key={month.value} value={month.value}>
-                  {month.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Select value={startDayValue} onValueChange={setStartDayValue}>
-            <SelectTrigger className="w-[70px]">
-              <SelectValue placeholder="Giorno" />
-            </SelectTrigger>
-            <SelectContent>
-              {generateDayOptions(startMonth).map((day) => (
-                <SelectItem key={day.value} value={day.value}>
-                  {day.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <span>-</span>
-
-        {/* End Date Selectors */}
-        <div className="flex items-center gap-1">
-          <Select value={endMonth} onValueChange={setEndMonth}>
-            <SelectTrigger className="w-[110px]">
-              <SelectValue placeholder="Mese" />
-            </SelectTrigger>
-            <SelectContent>
-              {months.map((month) => (
-                <SelectItem key={month.value} value={month.value}>
-                  {month.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          
-          <Select value={endDayValue} onValueChange={setEndDayValue}>
-            <SelectTrigger className="w-[70px]">
-              <SelectValue placeholder="Giorno" />
-            </SelectTrigger>
-            <SelectContent>
-              {generateDayOptions(endMonth).map((day) => (
-                <SelectItem key={day.value} value={day.value}>
-                  {day.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+      <Popover open={showCalendar} onOpenChange={setShowCalendar}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "justify-start text-left font-normal",
+              error && "border-red-500"
+            )}
+            onClick={() => {
+              setShowCalendar(true);
+              setSelectingEnd(false);
+            }}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            <span>
+              {format(startDate, 'dd MMM')} - {format(endDate, 'dd MMM')}
+            </span>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={selectingEnd ? endDate : startDate}
+            onSelect={handleDateSelect}
+            disabled={(date) => {
+              // Disable year selection, only allow selecting month and day
+              return false;
+            }}
+            initialFocus
+            className="p-3 pointer-events-auto"
+            footer={
+              <div className="px-4 pt-0 pb-3 text-center">
+                <p className="text-sm text-muted-foreground">
+                  {selectingEnd ? "Seleziona data di fine" : "Seleziona data di inizio"}
+                </p>
+              </div>
+            }
+          />
+        </PopoverContent>
+      </Popover>
       
-      {/* Error message */}
       {error && (
         <Alert variant="destructive" className="mt-2 py-2">
           <AlertCircle className="h-4 w-4" />
