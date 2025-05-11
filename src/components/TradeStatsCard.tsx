@@ -16,7 +16,15 @@ export default function TradeStatsCard() {
       setLoading(true);
       try {
         const result = await fetchTradeStats(asset, startDay, endDay, yearsBack);
-        setData(result);
+        // Fix the property names to match our TradeStats type
+        const fixedResult: TradeStats = {
+          total_trades: result.total_trades,
+          winning_trades: result.wins || 0, // Map from API 'wins' to our 'winning_trades'
+          losing_trades: result.losses || 0, // Map from API 'losses' to our 'losing_trades'
+          win_pct: result.win_pct,
+          loss_pct: result.loss_pct
+        };
+        setData(fixedResult);
       } catch (e) {
         console.error("Failed to fetch trade stats:", e);
         toast.error("Errore nel caricamento delle Trade Statistics");
