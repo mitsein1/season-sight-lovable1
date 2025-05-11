@@ -15,7 +15,7 @@ export default function TechnicalMetricsCard() {
     const loadData = async () => {
       setLoading(true);
       try {
-        // Fix the parameter order
+        // CORREZIONE: yearsBack deve essere il secondo parametro
         const result = await fetchMiscMetrics(asset, yearsBack, startDay, endDay);
         setData(result);
       } catch (error) {
@@ -29,11 +29,6 @@ export default function TechnicalMetricsCard() {
 
     loadData();
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
-
-  // Helper function to safely format numbers
-  const safeFormat = (value: number | undefined | null) => {
-    return value !== undefined && value !== null ? value.toFixed(2) : "N/A";
-  };
 
   return (
     <Card className="bg-white shadow-sm h-full">
@@ -56,23 +51,23 @@ export default function TechnicalMetricsCard() {
               <div className="text-xs text-slate-500">Current streak</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{data.calendar_days || "N/A"}</div>
+              <div className="text-lg font-bold">{data.calendar_days}</div>
               <div className="text-xs text-slate-500">Calendar days</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{safeFormat(data.volatility)}</div>
+              <div className="text-lg font-bold">{data.volatility.toFixed(2)}</div>
               <div className="text-xs text-slate-500">Volatility</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{safeFormat(data.sharpe_ratio)}</div>
+              <div className="text-lg font-bold">{data.sharpe_ratio.toFixed(2)}</div>
               <div className="text-xs text-slate-500">Sharpe ratio</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{safeFormat(data.sortino_ratio)}</div>
+              <div className="text-lg font-bold">{data.sortino_ratio.toFixed(2)}</div>
               <div className="text-xs text-slate-500">Sortino ratio</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{safeFormat(data.std_dev)}</div>
+              <div className="text-lg font-bold">{data.std_dev.toFixed(2)}</div>
               <div className="text-xs text-slate-500">Standard deviation</div>
             </div>
           </div>
