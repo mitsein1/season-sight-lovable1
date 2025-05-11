@@ -6,6 +6,11 @@ import { TradeStats } from "@/types";
 import { toast } from "sonner";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
+// Helper function to safely call toFixed on potentially undefined numbers
+const safeToFixed = (value: number | undefined | null, digits: number = 2): string => {
+  return value !== undefined && value !== null ? value.toFixed(digits) : "N/A";
+};
+
 export default function TradeStatsCard() {
   const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
   const [loading, setLoading] = useState(true);
@@ -15,8 +20,18 @@ export default function TradeStatsCard() {
     const load = async () => {
       setLoading(true);
       try {
-        const result = await fetchTradeStats(asset, startDay, endDay, yearsBack);
-        setData(result);
+        const apiResult = await fetchTradeStats(asset, startDay, endDay, yearsBack);
+        
+        // Map API response to TradeStats type
+        const mappedResult: TradeStats = {
+          total_trades: apiResult.total_trades,
+          winning_trades: apiResult.wins || 0,
+          losing_trades: apiResult.losses || 0,
+          win_pct: apiResult.win_pct,
+          loss_pct: apiResult.loss_pct
+        };
+        
+        setData(mappedResult);
       } catch (e) {
         console.error("Failed to fetch trade stats:", e);
         toast.error("Errore nel caricamento delle Trade Statistics");
@@ -53,13 +68,13 @@ export default function TradeStatsCard() {
             <div className="text-center">
               <div className="text-slate-500 text-sm mb-1">Win %</div>
               <div className={`text-2xl font-bold ${data.win_pct >= 0 ? "text-seasonax-positive" : "text-seasonax-negative"}`}>
-                {data.win_pct.toFixed(2)}%
+                {safeToFixed(data.win_pct)}%
               </div>
             </div>
             <div className="text-center">
               <div className="text-slate-500 text-sm mb-1">Loss %</div>
               <div className={`text-2xl font-bold ${data.loss_pct >= 0 ? "text-seasonax-positive" : "text-seasonax-negative"}`}>
-                {data.loss_pct.toFixed(2)}%
+                {safeToFixed(data.loss_pct)}%
               </div>
             </div>
           </div>
