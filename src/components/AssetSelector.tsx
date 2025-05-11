@@ -4,7 +4,7 @@ import { useSeasonax } from "@/context/SeasonaxContext";
 import { availableAssets } from "@/services/api";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -38,24 +38,30 @@ export default function AssetSelector() {
         <PopoverContent className="w-[180px] p-0">
           <Command>
             <CommandInput placeholder="Cerca asset..." />
-            <CommandEmpty>Nessun asset trovato.</CommandEmpty>
-            <CommandGroup>
-              {availableAssets.map((option) => (
-                <CommandItem
-                  key={option.value}
-                  value={option.value}
-                  onSelect={handleSelect}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      asset === option.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {option.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
+            <CommandList>
+              <CommandEmpty>Nessun asset trovato.</CommandEmpty>
+              <CommandGroup>
+                {Array.isArray(availableAssets) && availableAssets.length > 0 ? (
+                  availableAssets.map((option) => (
+                    <CommandItem
+                      key={option.value}
+                      value={option.value}
+                      onSelect={() => handleSelect(option.value)}
+                    >
+                      <Check
+                        className={cn(
+                          "mr-2 h-4 w-4",
+                          asset === option.value ? "opacity-100" : "opacity-0"
+                        )}
+                      />
+                      {option.label}
+                    </CommandItem>
+                  ))
+                ) : (
+                  <CommandItem>No assets available</CommandItem>
+                )}
+              </CommandGroup>
+            </CommandList>
           </Command>
         </PopoverContent>
       </Popover>
