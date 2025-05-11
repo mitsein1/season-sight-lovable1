@@ -194,3 +194,13 @@ export const fetchSeasonality = async (
   const response = await fetch(url);
   return handleResponse<Seasonality>(response);
 };
+export const availableAssets = [
+  { value: "AAPL",    label: "Apple Inc. (AAPL)" },
+  { value: "MSFT",    label: "Microsoft Corp. (MSFT)" },
+  { value: "GOOGL",   label: "Alphabet Inc. (GOOGL)" },
+  { value: "AMZN",    label: "Amazon.com Inc. (AMZN)" },
+  { value: "TSLA",    label: "Tesla Inc. (TSLA)" },
+  { value: "BTC-USD", label: "Bitcoin (BTC-USD)" },
+  { value: "ETH-USD", label: "Ethereum (ETH-USD)" },
+  { value: "EURUSD",  label: "EUR/USD" },
+];
