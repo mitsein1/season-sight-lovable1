@@ -23,7 +23,7 @@ export default function SeasonalityChart() {
   const [error, setError] = useState<string | null>(null);
 
   // Coefficiente di normalizzazione per "schiacciare" la curva
-  const NORMALIZATION_COEFFICIENT = 40; // <-- puoi modificare questo valore
+  const NORMALIZATION_COEFFICIENT = 100; // <-- puoi modificare questo valore
 
   useEffect(() => {
     const loadData = async () => {
