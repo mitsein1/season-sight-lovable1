@@ -22,6 +22,9 @@ export default function SeasonalityChart() {
   const [data, setData] = useState<ChartData[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Coefficiente di normalizzazione per "schiacciare" la curva
+  const NORMALIZATION_COEFFICIENT = 2; // <-- puoi modificare questo valore
+
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -36,14 +39,9 @@ export default function SeasonalityChart() {
           result.dates.length > 0 &&
           result.average_prices.length > 0
         ) {
-          const rawValues = result.average_prices;
-          const minVal = Math.min(...rawValues);
-          const maxVal = Math.max(...rawValues);
-          const range = maxVal - minVal || 1;
-
           const chartData = result.dates.map((date, index) => ({
             date: date,
-            value: ((rawValues[index] - minVal) / range) * 100,
+            value: result.average_prices[index] / NORMALIZATION_COEFFICIENT,
           }));
 
           setData(chartData);
@@ -87,7 +85,7 @@ export default function SeasonalityChart() {
     <div className="rounded-lg border bg-card p-4">
       <h3 className="text-lg font-semibold mb-2">Seasonality Analysis</h3>
       <p className="text-sm text-muted-foreground mb-4">
-        Normalized average pattern over last {yearsBack} years
+        Average pattern (visually normalized) over last {yearsBack} years
       </p>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
@@ -98,13 +96,12 @@ export default function SeasonalityChart() {
             tickFormatter={(value) => value}
           />
           <YAxis
-            domain={[0, 100]}
-            tickFormatter={(v) => `${v.toFixed(0)}%`}
+            tickFormatter={(v) => `${v.toFixed(2)}%`}
             tick={{ fontSize: 10 }}
-            tickCount={5}
+            allowDecimals={true}
           />
           <Tooltip
-            formatter={(value: number) => [`${value.toFixed(2)}%`, "Normalized Avg"]}
+            formatter={(value: number) => [`${value.toFixed(2)}%`, "Average"]}
             labelFormatter={(label) => `Date: ${label}`}
           />
           <Line
@@ -121,8 +118,7 @@ export default function SeasonalityChart() {
       <div className="flex justify-between text-xs text-muted-foreground mt-2">
         <div>Range: {min.toFixed(2)}% to {max.toFixed(2)}%</div>
         <div>
-          Data from {new Date().getFullYear() - yearsBack} to{" "}
-          {new Date().getFullYear() - 1}
+          Data from {new Date().getFullYear() - yearsBack} to {new Date().getFullYear() - 1}
         </div>
       </div>
     </div>
