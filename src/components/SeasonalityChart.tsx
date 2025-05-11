@@ -1,5 +1,12 @@
 import { useState, useEffect } from "react";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 import { fetchSeasonality } from "@/services/api";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -32,14 +39,12 @@ export default function SeasonalityChart() {
           const rawValues = result.average_prices;
           const minVal = Math.min(...rawValues);
           const maxVal = Math.max(...rawValues);
-          const range = maxVal - minVal || 1; // evita divisione per zero
+          const range = maxVal - minVal || 1;
 
           const chartData = result.dates.map((date, index) => ({
             date: date,
-            value: ((rawValues[index] - minVal) / range) * 100 // valori compressi tra 0 e 100
+            value: ((rawValues[index] - minVal) / range) * 100,
           }));
-
-
 
           setData(chartData);
         } else {
@@ -74,7 +79,7 @@ export default function SeasonalityChart() {
     );
   }
 
-  const values = data.map(item => item.value);
+  const values = data.map((d) => d.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
 
@@ -86,28 +91,27 @@ export default function SeasonalityChart() {
       </p>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-          <XAxis 
-            dataKey="date" 
-            tick={{ fontSize: 10 }} 
-            interval={30} 
+          <XAxis
+            dataKey="date"
+            tick={{ fontSize: 10 }}
+            interval={30}
             tickFormatter={(value) => value}
           />
-          <YAxis 
-            domain={[1, 100]}
+          <YAxis
+            domain={[0, 100]}
             tickFormatter={(v) => `${v.toFixed(0)}%`}
             tick={{ fontSize: 10 }}
-            allowDecimals={true}
-            tickCount={20}
+            tickCount={5}
           />
-          <Tooltip 
+          <Tooltip
             formatter={(value: number) => [`${value.toFixed(2)}%`, "Normalized Avg"]}
             labelFormatter={(label) => `Date: ${label}`}
           />
-          <Line 
-            type="monotone" 
-            dataKey="value" 
-            stroke="#3b82f6" 
-            dot={false} 
+          <Line
+            type="monotone"
+            dataKey="value"
+            stroke="#3b82f6"
+            dot={false}
             strokeWidth={2}
             animationDuration={1000}
             activeDot={{ r: 4, strokeWidth: 1 }}
@@ -116,7 +120,10 @@ export default function SeasonalityChart() {
       </ResponsiveContainer>
       <div className="flex justify-between text-xs text-muted-foreground mt-2">
         <div>Range: {min.toFixed(2)}% to {max.toFixed(2)}%</div>
-        <div>Data from {new Date().getFullYear() - yearsBack} to {new Date().getFullYear() - 1}</div>
+        <div>
+          Data from {new Date().getFullYear() - yearsBack} to{" "}
+          {new Date().getFullYear() - 1}
+        </div>
       </div>
     </div>
   );
