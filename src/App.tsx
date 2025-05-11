@@ -8,13 +8,16 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import ScreenerPage from "./pages/ScreenerPage";
-import { SeasonaxProvider } from "@/context/SeasonaxContext";  // ← aggiunto
+
+// ← Importa il provider dal file di contesto
+import { SeasonaxProvider } from "@/context/SeasonaxContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <SeasonaxProvider>  {/* ← avvolge tutta l’app */}
+  // ← AVVOLGI TUTTO nel provider
+  <SeasonaxProvider>
+    <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
@@ -28,8 +31,8 @@ const App = () => (
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
-    </SeasonaxProvider>
-  </QueryClientProvider>
+    </QueryClientProvider>
+  </SeasonaxProvider>
 );
 
 export default App;
