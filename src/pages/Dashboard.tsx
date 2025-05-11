@@ -54,7 +54,7 @@ export default function Dashboard() {
     const loadMiscData = async () => {
       setMiscLoading(true);
       try {
-        // Pass years_back as an additional parameter
+        // Corretto l'ordine dei parametri per fetchMiscMetrics
         const result = await fetchMiscMetrics(asset, startDay, endDay, yearsBack);
         setMiscData(result);
       } catch (error) {
@@ -167,17 +167,17 @@ export default function Dashboard() {
                   ? [
                       {
                         label: "Number of Trades",
-                        value: miscData.number_of_trades,
+                        value: miscData.trades,
                         valueType: "neutral",
                       },
                       {
                         label: "Trading Days",
-                        value: miscData.trading_days,
+                        value: miscData.calendar_days,
                         valueType: "neutral",
                       },
                       {
                         label: "Std Deviation",
-                        value: miscData.std_deviation?.toFixed(2),
+                        value: miscData.std_dev?.toFixed(2),
                         valueType: "neutral",
                       },
                       {
