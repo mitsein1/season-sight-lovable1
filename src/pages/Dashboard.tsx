@@ -11,6 +11,7 @@ export default function Dashboard() {
       <Navbar />
       <div className="container mx-auto px-4 py-6">
         <MainCharts />
+        <TradeStatsCard />
         <PatternCharts />
         <SeasonalitySection />
         <StatsSection />
