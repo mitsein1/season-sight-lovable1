@@ -4,7 +4,7 @@ import MainCharts from "@/components/dashboard/MainCharts";
 import PatternCharts from "@/components/dashboard/PatternCharts";
 import SeasonalitySection from "@/components/dashboard/SeasonalitySection";
 import StatsSection from "@/components/dashboard/StatsSection";
-
+import TradeStatsCard     from "@/components/TradeStatsCard";
 export default function Dashboard() {
   return (
     <div className="min-h-screen bg-background">
