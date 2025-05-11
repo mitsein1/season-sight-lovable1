@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { fetchSeasonality } from "@/services/api";
@@ -20,20 +19,23 @@ export default function SeasonalityChart() {
     const loadData = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         const result = await fetchSeasonality(asset, yearsBack, startDay, endDay);
-        
-        if (result.dates && result.average_prices && 
-            result.dates.length > 0 && 
-            result.average_prices.length > 0) {
-          
-          // Map the API response to the chart data format and scale to percentage
+
+        if (result.dates && result.average_prices &&
+          result.dates.length > 0 &&
+          result.average_prices.length > 0) {
+
+          const prices = result.average_prices;
+          const min = Math.min(...prices);
+          const max = Math.max(...prices);
+
           const chartData = result.dates.map((date, index) => ({
             date: date,
-            value: result.average_prices[index] * 100
+            value: ((prices[index] - min) / (max - min)) * 100,
           }));
-          
+
           setData(chartData);
         } else {
           setData([]);
@@ -67,17 +69,15 @@ export default function SeasonalityChart() {
     );
   }
 
-  // Calculate the min and max values for reference
   const values = data.map(item => item.value);
   const min = Math.min(...values);
   const max = Math.max(...values);
-  const dataAverage = values.reduce((sum, val) => sum + val, 0) / values.length;
 
   return (
     <div className="rounded-lg border bg-card p-4">
       <h3 className="text-lg font-semibold mb-2">Seasonality Analysis</h3>
       <p className="text-sm text-muted-foreground mb-4">
-        Average price patterns over the last {yearsBack} years
+        Normalized average pattern over last {yearsBack} years
       </p>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
@@ -88,14 +88,14 @@ export default function SeasonalityChart() {
             tickFormatter={(value) => value}
           />
           <YAxis 
-            domain={[Math.max(0, dataAverage - 20), Math.min(100, dataAverage + 20)]} // More focused domain around the average value
-            tickFormatter={(v) => `${v.toFixed(1)}%`}
+            domain={[0, 100]}
+            tickFormatter={(v) => `${v.toFixed(0)}%`}
             tick={{ fontSize: 10 }}
             allowDecimals={true}
-            tickCount={5} // Fewer ticks for cleaner look
+            tickCount={6}
           />
           <Tooltip 
-            formatter={(value: number) => [`${value.toFixed(2)}%`, "Average Price"]}
+            formatter={(value: number) => [`${value.toFixed(2)}%`, "Normalized Avg"]}
             labelFormatter={(label) => `Date: ${label}`}
           />
           <Line 
@@ -111,7 +111,7 @@ export default function SeasonalityChart() {
       </ResponsiveContainer>
       <div className="flex justify-between text-xs text-muted-foreground mt-2">
         <div>Range: {min.toFixed(2)}% to {max.toFixed(2)}%</div>
-        <div>Data averaged from {new Date().getFullYear() - yearsBack} to {new Date().getFullYear() - 1}</div>
+        <div>Data from {new Date().getFullYear() - yearsBack} to {new Date().getFullYear() - 1}</div>
       </div>
     </div>
   );
