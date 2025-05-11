@@ -205,3 +205,30 @@ export const availableAssets = [
   { value: "ETH-USD", label: "Ethereum (ETH-USD)" },
   { value: "EURUSD",  label: "EUR/USD" },
 ];
+export const downloadCSV = async (
+  asset: string,
+  startDay: string,
+  endDay: string
+): Promise<void> => {
+  const url =
+    `${API_BASE_URL}/api/export` +
+    `?asset=${encodeURIComponent(asset)}` +
+    `&start_day=${encodeURIComponent(startDay)}` +
+    `&end_day=${encodeURIComponent(endDay)}` +
+    `&format=csv`;
+  console.log(`Downloading CSV with URL: ${url}`);
+  const response = await fetch(url);
+  if (!response.ok) {
+    const errorText = await response.text();
+    const msg = `Download CSV failed (${response.status}): ${errorText || response.statusText}`;
+    toast.error(msg);
+    throw new Error(msg);
+  }
+  const blob = await response.blob();
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `${asset}_${startDay}_${endDay}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+};
