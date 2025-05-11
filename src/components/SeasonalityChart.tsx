@@ -88,7 +88,7 @@ export default function SeasonalityChart() {
             tickFormatter={(value) => value}
           />
           <YAxis 
-            domain={[1, 100]}
+            domain={[1, 10]}
             tickFormatter={(v) => `${v.toFixed(0)}%`}
             tick={{ fontSize: 10 }}
             allowDecimals={true}
