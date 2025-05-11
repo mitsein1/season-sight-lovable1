@@ -268,3 +268,23 @@ export const downloadCSV = async (
   a.click();
   a.remove();
 };
+
+export const fetchScreenerResults = async (
+  market_group: string[],
+  start_date: string,
+  pattern_length_days: number,
+  years_back: number,
+  min_win_ratio: number,
+  direction = "long"
+) => {
+  const response = await fetch(`${API_BASE_URL}/api/screener`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ market_group, start_date, pattern_length_days, years_back, min_win_ratio, direction }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.statusText}`);
+  }
+  return response.json();
+};
