@@ -1,40 +1,52 @@
-
 import { useEffect, useState } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchCumulativeProfit, CumulativeProfitItem } from "@/services/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  ReferenceLine,
+} from "recharts";
 import { toast } from "sonner";
+
+interface ChartPoint {
+  year: number;
+  cumulative: number;
+}
 
 export default function CumulativeProfitChart() {
   const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<Array<CumulativeProfitItem> | null>(null);
-  const [chartData, setChartData] = useState<{ year: number; profit: number }[]>([]);
+  const [data, setData] = useState<CumulativeProfitItem[] | null>(null);
+  const [chartData, setChartData] = useState<ChartPoint[]>([]);
 
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
       try {
-        console.log(`Fetching cumulative profit for ${asset} from ${startDay} to ${endDay}`);
         const result = await fetchCumulativeProfit(asset, startDay, endDay);
-        console.log("Received cumulative profit data:", result);
         setData(result);
-        
-        // Transform data for chart
-        const formattedData = result.map(item => ({
-          year: item.year,
-          profit: item.cumulative_profit
-        }));
-        
-        // Filter by yearsBack
+
+        // 1) Ordina per anno
+        const sorted = [...result].sort((a, b) => a.year - b.year);
+
+        // 2) Calcola cumulato
+        let cum = 0;
+        const cumulPoints: ChartPoint[] = sorted.map(({ year, cumulative_profit }) => {
+          cum += cumulative_profit;              // accumulo
+          return { year, cumulative: parseFloat(cum.toFixed(2)) };
+        });
+
+        // 3) Filtra gli ultimi `yearsBack` anni
         const currentYear = new Date().getFullYear();
-        const filteredData = formattedData.filter(item => 
-          item.year >= (currentYear - yearsBack)
-        );
-        
-        console.log("Transformed and filtered chart data:", filteredData);
-        setChartData(filteredData);
+        const filtered = cumulPoints.filter(pt => pt.year >= currentYear - yearsBack + 1);
+
+        setChartData(filtered);
       } catch (error) {
         console.error("Failed to fetch cumulative profit:", error);
         toast.error("Failed to load cumulative profit data");
@@ -47,26 +59,22 @@ export default function CumulativeProfitChart() {
     loadData();
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
-  const formatYAxis = (value: number) => {
-    return `${value.toFixed(2)}%`;
-  };
-
-  const formatTooltip = (value: number) => {
-    return [`${value.toFixed(2)}%`, 'Profit'];
-  };
+  const formatYAxis = (value: number) => `${value.toFixed(2)}%`;
+  const formatTooltip = (value: number) => [`${value.toFixed(2)}%`, "Cumulato"];
 
   return (
     <Card className="seasonax-card h-full">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg">
-          Cumulative Profit ({startDay} - {endDay})
+          Cumulative Profit ({startDay} – {endDay})
         </CardTitle>
       </CardHeader>
       <CardContent>
         {loading && <div className="flex justify-center items-center h-64">Loading...</div>}
-        {!loading && !data && <div className="flex justify-center items-center h-64">No data available</div>}
-        {!loading && data && data.length === 0 && <div className="flex justify-center items-center h-64">No data available</div>}
-        {!loading && data && data.length > 0 && (
+        {!loading && (!data || data.length === 0) && (
+          <div className="flex justify-center items-center h-64">No data available</div>
+        )}
+        {!loading && data?.length > 0 && (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
@@ -76,26 +84,27 @@ export default function CumulativeProfitChart() {
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                 <XAxis 
                   dataKey="year" 
-                  tick={{ fontSize: 12 }}
-                  padding={{ left: 10, right: 10 }}
+                  tick={{ fontSize: 12 }} 
+                  padding={{ left: 10, right: 10 }} 
                 />
                 <YAxis 
+                  dataKey="cumulative"
                   tickFormatter={formatYAxis}
                   width={60}
                   tick={{ fontSize: 12 }}
-                  domain={['auto', 'auto']}
+                  domain={["auto", "auto"]}
                 />
                 <Tooltip 
-                  formatter={formatTooltip}
-                  labelFormatter={(value) => `Year: ${value}`}
+                  formatter={formatTooltip} 
+                  labelFormatter={(year) => `Year: ${year}`} 
                 />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
-                <Line 
-                  type="monotone" 
-                  dataKey="profit" 
-                  stroke="#3584e4" 
-                  dot={{ r: 4 }} 
-                  activeDot={{ r: 6 }} 
+                <Line
+                  type="monotone"
+                  dataKey="cumulative"
+                  stroke="#3584e4"
+                  dot={{ r: 4 }}
+                  activeDot={{ r: 6 }}
                   strokeWidth={2}
                   animationDuration={1000}
                 />
