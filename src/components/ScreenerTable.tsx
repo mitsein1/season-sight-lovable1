@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { fetchScreenerResults } from './api';
+// se usi alias “@” → punta a src/api.ts
+import { fetchScreenerResults } from '@/api';
 import { Table, TableHeader, TableCell, TableRow } from '@/components/ui/table';
 
 const ScreenerTable = ({filters}) => {
