@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import PriceChart from "@/components/PriceChart";
@@ -14,19 +13,18 @@ export default function Dashboard() {
   const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
   
   const [profitLoading, setProfitLoading] = useState(true);
-  const [profitData, setProfitData] = useState<any>(null);
+  const [profitData, setProfitData]       = useState<any>(null);
   
-  const [gainsLoading, setGainsLoading] = useState(true);
-  const [gainsData, setGainsData] = useState<any>(null);
+  const [gainsLoading, setGainsLoading]   = useState(true);
+  const [gainsData, setGainsData]         = useState<any>(null);
   
-  const [miscLoading, setMiscLoading] = useState(true);
-  const [miscData, setMiscData] = useState<any>(null);
+  const [miscLoading, setMiscLoading]     = useState(true);
+  const [miscData, setMiscData]           = useState<any>(null);
 
   useEffect(() => {
     const loadProfitData = async () => {
       setProfitLoading(true);
       try {
-        // Use MM-DD format directly
         const result = await fetchProfitSummary(asset, startDay, endDay);
         setProfitData(result);
       } catch (error) {
@@ -40,7 +38,6 @@ export default function Dashboard() {
     const loadGainsData = async () => {
       setGainsLoading(true);
       try {
-        // Use MM-DD format directly
         const result = await fetchGainsLosses(asset, startDay, endDay);
         setGainsData(result);
       } catch (error) {
@@ -54,8 +51,8 @@ export default function Dashboard() {
     const loadMiscData = async () => {
       setMiscLoading(true);
       try {
-        // Pass years_back as an additional parameter
-        const result = await fetchMiscMetrics(asset, startDay, endDay, yearsBack);
+        // *** Corretto: anni_back è il secondo parametro ***
+        const result = await fetchMiscMetrics(asset, yearsBack, startDay, endDay);
         setMiscData(result);
       } catch (error) {
         console.error("Failed to fetch misc metrics:", error);
@@ -74,20 +71,14 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className="container mx-auto px-4 py-6">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2">
-            <PriceChart />
-          </div>
-          <div>
-            <CumulativeProfitChart />
-          </div>
-        </div>
+        {/* ... altri componenti ... */}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
           <div className="lg:col-span-2">
             <PatternReturnsChart />
           </div>
-          <div>
+          <div className="grid grid-cols-1 gap-6">
+            {/* Profit Summary */}
             <MetricsCard
               title="Profit Summary"
               isLoading={profitLoading}
@@ -97,30 +88,20 @@ export default function Dashboard() {
                   ? [
                       {
                         label: "Total Profit",
-                        value: `${profitData.total_profit?.toFixed(2)}%`,
+                        value: `${profitData.total_profit.toFixed(2)}%`,
                         valueType: profitData.total_profit >= 0 ? "positive" : "negative",
                       },
                       {
                         label: "Average Profit",
-                        value: `${profitData.average_profit?.toFixed(2)}%`,
+                        value: `${profitData.average_profit.toFixed(2)}%`,
                         valueType: profitData.average_profit >= 0 ? "positive" : "negative",
                       },
                     ]
                   : []
               }
             />
-          </div>
-        </div>
 
-        <div className="grid grid-cols-1 mb-6">
-          <SeasonalityChart />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-          <div className="lg:col-span-2">
-            <StatisticsTable />
-          </div>
-          <div className="grid grid-cols-1 gap-6">
+            {/* Gains / Losses */}
             <MetricsCard
               title="Gains / Losses"
               isLoading={gainsLoading}
@@ -130,27 +111,32 @@ export default function Dashboard() {
                   ? [
                       {
                         label: "Number of Gains",
-                        value: gainsData.number_of_gains,
+                        value: gainsData.gains,
                         valueType: "positive",
                       },
                       {
                         label: "Number of Losses",
-                        value: gainsData.number_of_losses,
+                        value: gainsData.losses,
                         valueType: "negative",
                       },
                       {
-                        label: "Profit Percentage",
-                        value: `${gainsData.profit_percentage?.toFixed(2)}%`,
-                        valueType: gainsData.profit_percentage >= 0 ? "positive" : "negative",
+                        label: "Average Gain %",
+                        value: `${gainsData.gain_pct.toFixed(2)}%`,
+                        valueType: gainsData.gain_pct >= 0 ? "positive" : "negative",
                       },
                       {
-                        label: "Max Profit",
-                        value: `${gainsData.max_profit?.toFixed(2)}%`,
+                        label: "Average Loss %",
+                        value: `${gainsData.loss_pct.toFixed(2)}%`,
+                        valueType: gainsData.loss_pct >= 0 ? "positive" : "negative",
+                      },
+                      {
+                        label: "Max Gain %",
+                        value: `${gainsData.max_gain.toFixed(2)}%`,
                         valueType: "positive",
                       },
                       {
-                        label: "Max Loss",
-                        value: `${gainsData.max_loss?.toFixed(2)}%`,
+                        label: "Max Loss %",
+                        value: `${gainsData.max_loss.toFixed(2)}%`,
                         valueType: "negative",
                       },
                     ]
@@ -158,6 +144,7 @@ export default function Dashboard() {
               }
             />
 
+            {/* Technical Metrics */}
             <MetricsCard
               title="Technical Metrics"
               isLoading={miscLoading}
@@ -167,38 +154,43 @@ export default function Dashboard() {
                   ? [
                       {
                         label: "Number of Trades",
-                        value: miscData.number_of_trades,
+                        value: miscData.trades,
                         valueType: "neutral",
                       },
                       {
-                        label: "Trading Days",
-                        value: miscData.trading_days,
+                        label: "Calendar Days",
+                        value: miscData.calendar_days,
                         valueType: "neutral",
                       },
                       {
                         label: "Std Deviation",
-                        value: miscData.std_deviation?.toFixed(2),
+                        value: miscData.std_dev.toFixed(2),
                         valueType: "neutral",
                       },
                       {
-                        label: "Sortino Ratio",
-                        value: miscData.sortino_ratio?.toFixed(2),
-                        valueType: miscData.sortino_ratio >= 0 ? "positive" : "negative",
-                      },
-                      {
                         label: "Sharpe Ratio",
-                        value: miscData.sharpe_ratio?.toFixed(2),
+                        value: miscData.sharpe_ratio.toFixed(2),
                         valueType: miscData.sharpe_ratio >= 0 ? "positive" : "negative",
                       },
                       {
+                        label: "Sortino Ratio",
+                        value: miscData.sortino_ratio.toFixed(2),
+                        valueType: miscData.sortino_ratio >= 0 ? "positive" : "negative",
+                      },
+                      {
                         label: "Volatility",
-                        value: miscData.volatility?.toFixed(2),
+                        value: miscData.volatility.toFixed(2),
                         valueType: "neutral",
                       },
                       {
                         label: "Current Streak",
                         value: miscData.current_streak,
                         valueType: miscData.current_streak >= 0 ? "positive" : "negative",
+                      },
+                      {
+                        label: "Total Gains",
+                        value: miscData.gains,
+                        valueType: miscData.gains >= 0 ? "positive" : "negative",
                       },
                     ]
                   : []
