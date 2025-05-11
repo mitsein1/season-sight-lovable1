@@ -19,7 +19,7 @@ export default function TradeStatsCard() {
         setData(result);
       } catch (e) {
         console.error("Failed to fetch trade stats:", e);
-        toast.error("Errore nel caricamento delle Trade Statistics");
+        toast.error("Error loading Trade Statistics");
         setData(null);
       } finally {
         setLoading(false);
@@ -27,6 +27,11 @@ export default function TradeStatsCard() {
     };
     load();
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
+
+  // Helper function to safely format percentages
+  const safePercentage = (value: number | undefined | null) => {
+    return value !== undefined && value !== null ? value.toFixed(2) : "N/A";
+  };
 
   return (
     <Card className="bg-white shadow-sm">
@@ -52,14 +57,14 @@ export default function TradeStatsCard() {
             </div>
             <div className="text-center">
               <div className="text-slate-500 text-sm mb-1">Win %</div>
-              <div className={`text-2xl font-bold ${data.win_pct >= 0 ? "text-seasonax-positive" : "text-seasonax-negative"}`}>
-                {data.win_pct.toFixed(2)}%
+              <div className={`text-2xl font-bold ${parseFloat(safePercentage(data.win_pct)) >= 0 ? "text-seasonax-positive" : "text-seasonax-negative"}`}>
+                {safePercentage(data.win_pct)}%
               </div>
             </div>
             <div className="text-center">
               <div className="text-slate-500 text-sm mb-1">Loss %</div>
-              <div className={`text-2xl font-bold ${data.loss_pct >= 0 ? "text-seasonax-positive" : "text-seasonax-negative"}`}>
-                {data.loss_pct.toFixed(2)}%
+              <div className={`text-2xl font-bold ${parseFloat(safePercentage(data.loss_pct)) >= 0 ? "text-seasonax-positive" : "text-seasonax-negative"}`}>
+                {safePercentage(data.loss_pct)}%
               </div>
             </div>
           </div>
