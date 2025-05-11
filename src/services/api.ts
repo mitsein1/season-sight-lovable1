@@ -73,6 +73,32 @@ export interface Seasonality {
   average_prices: number[];
 }
 
+export interface TradeStats {
+  total_trades: number;
+  wins:         number;
+  losses:       number;
+  win_pct:      number;
+  loss_pct:     number;
+}
+
+export const fetchTradeStats = async (
+  asset:     string,
+  startDay:  string,
+  endDay:    string,
+  yearsBack?: number
+): Promise<TradeStats> => {
+  let url = `${API_BASE_URL}/api/trade-stats?` +
+            `asset=${encodeURIComponent(asset)}` +
+            `&start_day=${encodeURIComponent(startDay)}` +
+            `&end_day=${encodeURIComponent(endDay)}`;
+  if (yearsBack !== undefined) {
+    url += `&years_back=${yearsBack}`;
+  }
+  console.log("Fetching trade stats:", url);
+  const res = await fetch(url);
+  return handleResponse<TradeStats>(res);
+};
+
 // API functions
 
 export const fetchPriceSeries = async (
