@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchMiscMetrics } from "@/services/api";
-import MetricsCard from "@/components/MetricsCard";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MiscMetrics } from "@/types";
 import { toast } from "sonner";
 
@@ -14,7 +15,7 @@ export default function TechnicalMetricsCard() {
     const loadData = async () => {
       setLoading(true);
       try {
-        // CORREZIONE: yearsBack deve essere il secondo parametro
+        // Fix the parameter order
         const result = await fetchMiscMetrics(asset, yearsBack, startDay, endDay);
         setData(result);
       } catch (error) {
@@ -29,57 +30,54 @@ export default function TechnicalMetricsCard() {
     loadData();
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
+  // Helper function to safely format numbers
+  const safeFormat = (value: number | undefined | null) => {
+    return value !== undefined && value !== null ? value.toFixed(2) : "N/A";
+  };
+
   return (
-    <MetricsCard
-      title="Technical Metrics"
-      isLoading={loading}
-      hasData={!!data}
-      metrics={
-        data
-          ? [
-              {
-                label: "Number of Trades",
-                value: data.trades,
-                valueType: "neutral",
-              },
-              {
-                label: "Calendar Days",
-                value: data.calendar_days,
-                valueType: "neutral",
-              },
-              {
-                label: "Std Deviation",
-                value: data.std_dev.toFixed(2),
-                valueType: "neutral",
-              },
-              {
-                label: "Sortino Ratio",
-                value: data.sortino_ratio.toFixed(2),
-                valueType: data.sortino_ratio >= 0 ? "positive" : "negative",
-              },
-              {
-                label: "Sharpe Ratio",
-                value: data.sharpe_ratio.toFixed(2),
-                valueType: data.sharpe_ratio >= 0 ? "positive" : "negative",
-              },
-              {
-                label: "Volatility",
-                value: data.volatility.toFixed(2),
-                valueType: "neutral",
-              },
-              {
-                label: "Current Streak",
-                value: data.current_streak,
-                valueType: data.current_streak >= 0 ? "positive" : "negative",
-              },
-              {
-                label: "Total Gains",
-                value: data.gains,
-                valueType: data.gains >= 0 ? "positive" : "negative",
-              },
-            ]
-          : []
-      }
-    />
+    <Card className="bg-white shadow-sm h-full">
+      <CardHeader className="pb-2 pt-4 px-6">
+        <CardTitle className="text-lg font-semibold text-slate-800">Miscellaneous</CardTitle>
+      </CardHeader>
+      <CardContent className="px-6 pb-6">
+        {loading ? (
+          <div className="flex justify-center py-8">Loading...</div>
+        ) : !data ? (
+          <div className="flex justify-center py-8 text-slate-500">No data available</div>
+        ) : (
+          <div className="grid grid-cols-2 gap-y-6">
+            <div>
+              <div className="text-lg font-bold">{data.trades}</div>
+              <div className="text-xs text-slate-500">Trades</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold">{data.current_streak}</div>
+              <div className="text-xs text-slate-500">Current streak</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold">{data.calendar_days || "N/A"}</div>
+              <div className="text-xs text-slate-500">Calendar days</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold">{safeFormat(data.volatility)}</div>
+              <div className="text-xs text-slate-500">Volatility</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold">{safeFormat(data.sharpe_ratio)}</div>
+              <div className="text-xs text-slate-500">Sharpe ratio</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold">{safeFormat(data.sortino_ratio)}</div>
+              <div className="text-xs text-slate-500">Sortino ratio</div>
+            </div>
+            <div>
+              <div className="text-lg font-bold">{safeFormat(data.std_dev)}</div>
+              <div className="text-xs text-slate-500">Standard deviation</div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
