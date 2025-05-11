@@ -1,3 +1,4 @@
+// src/App.tsx
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,14 +10,14 @@ import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import ScreenerPage from "./pages/ScreenerPage";
 
-// ← Importa il provider dal file di contesto
-import { SeasonaxProvider } from "@/context/SeasonaxContext";
+import { SeasonaxProvider } from "@/context/SeasonaxContext";  // ← named export
 
 const queryClient = new QueryClient();
 
 const App = () => (
-  // ← AVVOLGI TUTTO nel provider
+  // ← 1) Avvolgi tutta l’app nel SeasonaxProvider
   <SeasonaxProvider>
+    {/* 2) Poi il QueryClientProvider */}
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
