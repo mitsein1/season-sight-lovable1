@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchMiscMetrics } from "@/services/api";
@@ -15,7 +14,8 @@ export default function TechnicalMetricsCard() {
     const loadData = async () => {
       setLoading(true);
       try {
-        const result = await fetchMiscMetrics(asset, startDay, endDay, yearsBack);
+        // CORREZIONE: yearsBack deve essere il secondo parametro
+        const result = await fetchMiscMetrics(asset, yearsBack, startDay, endDay);
         setData(result);
       } catch (error) {
         console.error("Failed to fetch misc metrics:", error);
@@ -43,34 +43,39 @@ export default function TechnicalMetricsCard() {
                 valueType: "neutral",
               },
               {
-                label: "Trading Days",
+                label: "Calendar Days",
                 value: data.calendar_days,
                 valueType: "neutral",
               },
               {
                 label: "Std Deviation",
-                value: data.std_dev?.toFixed(2),
+                value: data.std_dev.toFixed(2),
                 valueType: "neutral",
               },
               {
                 label: "Sortino Ratio",
-                value: data.sortino_ratio?.toFixed(2),
+                value: data.sortino_ratio.toFixed(2),
                 valueType: data.sortino_ratio >= 0 ? "positive" : "negative",
               },
               {
                 label: "Sharpe Ratio",
-                value: data.sharpe_ratio?.toFixed(2),
+                value: data.sharpe_ratio.toFixed(2),
                 valueType: data.sharpe_ratio >= 0 ? "positive" : "negative",
               },
               {
                 label: "Volatility",
-                value: data.volatility?.toFixed(2),
+                value: data.volatility.toFixed(2),
                 valueType: "neutral",
               },
               {
                 label: "Current Streak",
                 value: data.current_streak,
                 valueType: data.current_streak >= 0 ? "positive" : "negative",
+              },
+              {
+                label: "Total Gains",
+                value: data.gains,
+                valueType: data.gains >= 0 ? "positive" : "negative",
               },
             ]
           : []
