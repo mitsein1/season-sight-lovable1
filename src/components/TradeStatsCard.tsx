@@ -1,11 +1,10 @@
-// src/components/TradeStatsCard.tsx
 
 import { useState, useEffect } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchTradeStats } from "@/services/api";
-import MetricsCard from "@/components/MetricsCard";
-import { TradeStats } from "@/types";         // assicuratevi che TradeStats abbia questi campi
+import { TradeStats } from "@/types";
 import { toast } from "sonner";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
 export default function TradeStatsCard() {
   const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
@@ -30,41 +29,42 @@ export default function TradeStatsCard() {
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
   return (
-    <MetricsCard
-      title="Trade Statistics"
-      isLoading={loading}
-      hasData={!!data}
-      metrics={
-        data
-          ? [
-              {
-                label: "Total Trades",
-                value: data.total_trades,
-                valueType: "neutral",
-              },
-              {
-                label: "Winning Trades",
-                value: data.winning_trades,
-                valueType: "positive",
-              },
-              {
-                label: "Losing Trades",
-                value: data.losing_trades,
-                valueType: "negative",
-              },
-              {
-                label: "Win %",
-                value: `${data.win_pct.toFixed(2)}%`,
-                valueType: data.win_pct >= 0 ? "positive" : "negative",
-              },
-              {
-                label: "Loss %",
-                value: `${data.loss_pct.toFixed(2)}%`,
-                valueType: data.loss_pct >= 0 ? "positive" : "negative",
-              },
-            ]
-          : []
-      }
-    />
+    <Card className="bg-white shadow-sm">
+      <CardContent className="p-6">
+        <CardTitle className="text-xl font-semibold text-slate-800 mb-4">Trade Statistics</CardTitle>
+        {loading ? (
+          <div className="flex justify-center py-8">Loading...</div>
+        ) : !data ? (
+          <div className="flex justify-center py-8 text-slate-500">No data available</div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-6">
+            <div className="text-center">
+              <div className="text-slate-500 text-sm mb-1">Total Trades</div>
+              <div className="text-2xl font-bold">{data.total_trades}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-slate-500 text-sm mb-1">Winning Trades</div>
+              <div className="text-2xl font-bold text-seasonax-positive">{data.winning_trades}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-slate-500 text-sm mb-1">Losing Trades</div>
+              <div className="text-2xl font-bold text-seasonax-negative">{data.losing_trades}</div>
+            </div>
+            <div className="text-center">
+              <div className="text-slate-500 text-sm mb-1">Win %</div>
+              <div className={`text-2xl font-bold ${data.win_pct >= 0 ? "text-seasonax-positive" : "text-seasonax-negative"}`}>
+                {data.win_pct.toFixed(2)}%
+              </div>
+            </div>
+            <div className="text-center">
+              <div className="text-slate-500 text-sm mb-1">Loss %</div>
+              <div className={`text-2xl font-bold ${data.loss_pct >= 0 ? "text-seasonax-positive" : "text-seasonax-negative"}`}>
+                {data.loss_pct.toFixed(2)}%
+              </div>
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
