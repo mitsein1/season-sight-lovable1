@@ -1,6 +1,7 @@
+
 import React, { useEffect, useState } from 'react';
-// se usi alias “@” → punta a src/api.ts
-import { fetchScreenerResults } from '@/api';
+// Fix the import path to use the correct services folder
+import { fetchScreenerResults } from '@/services/api';
 import { Table, TableHeader, TableCell, TableRow } from '@/components/ui/table';
 
 const ScreenerTable = ({filters}) => {
