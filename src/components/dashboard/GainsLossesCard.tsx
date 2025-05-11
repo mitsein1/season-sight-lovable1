@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchGainsLosses } from "@/services/api";
@@ -8,7 +7,14 @@ import { toast } from "sonner";
 export default function GainsLossesCard() {
   const { asset, startDay, endDay, refreshCounter } = useSeasonax();
   const [loading, setLoading] = useState(true);
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<{
+    gains: number;
+    losses: number;
+    gain_pct: number;
+    loss_pct: number;
+    max_gain: number;
+    max_loss: number;
+  } | null>(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -38,27 +44,32 @@ export default function GainsLossesCard() {
           ? [
               {
                 label: "Number of Gains",
-                value: data.number_of_gains,
+                value: data.gains,
                 valueType: "positive",
               },
               {
                 label: "Number of Losses",
-                value: data.number_of_losses,
+                value: data.losses,
                 valueType: "negative",
               },
               {
-                label: "Profit Percentage",
-                value: `${data.profit_percentage?.toFixed(2)}%`,
-                valueType: data.profit_percentage >= 0 ? "positive" : "negative",
+                label: "Average Gain %",
+                value: `${data.gain_pct.toFixed(2)}%`,
+                valueType: data.gain_pct >= 0 ? "positive" : "negative",
               },
               {
-                label: "Max Profit",
-                value: `${data.max_profit?.toFixed(2)}%`,
+                label: "Average Loss %",
+                value: `${data.loss_pct.toFixed(2)}%`,
+                valueType: data.loss_pct >= 0 ? "positive" : "negative",
+              },
+              {
+                label: "Max Gain %",
+                value: `${data.max_gain.toFixed(2)}%`,
                 valueType: "positive",
               },
               {
-                label: "Max Loss",
-                value: `${data.max_loss?.toFixed(2)}%`,
+                label: "Max Loss %",
+                value: `${data.max_loss.toFixed(2)}%`,
                 valueType: "negative",
               },
             ]
