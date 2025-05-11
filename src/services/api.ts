@@ -82,19 +82,23 @@ export interface TradeStats {
 }
 
 export const fetchTradeStats = async (
-  asset:     string,
-  startDay:  string,
-  endDay:    string,
+  asset: string,
+  startDay: string,
+  endDay: string,
   yearsBack?: number
 ): Promise<TradeStats> => {
-  let url = `${API_BASE_URL}/api/trade-stats?` +
-            `asset=${encodeURIComponent(asset)}` +
-            `&start_day=${encodeURIComponent(startDay)}` +
-            `&end_day=${encodeURIComponent(endDay)}`;
+  const params = new URLSearchParams({
+    asset,
+    start_day: startDay,
+    end_day: endDay,
+  });
   if (yearsBack !== undefined) {
-    url += `&years_back=${yearsBack}`;
+    params.append("years_back", yearsBack.toString());
   }
-  console.log("Fetching trade stats:", url);
+
+  const url = `${API_BASE_URL}/api/trade-stats?${params.toString()}`;
+  console.log("🔄 Fetching trade stats:", url);
+  
   const res = await fetch(url);
   return handleResponse<TradeStats>(res);
 };
