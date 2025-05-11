@@ -88,11 +88,11 @@ export default function SeasonalityChart() {
             tickFormatter={(value) => value}
           />
           <YAxis 
-            domain={[1, 10]}
+            domain={[1, 100]}
             tickFormatter={(v) => `${v.toFixed(0)}%`}
             tick={{ fontSize: 10 }}
             allowDecimals={true}
-            tickCount={6}
+            tickCount={20}
           />
           <Tooltip 
             formatter={(value: number) => [`${value.toFixed(2)}%`, "Normalized Avg"]}
