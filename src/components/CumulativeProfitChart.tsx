@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchCumulativeProfit, CumulativeProfitItem } from "@/services/api";
@@ -61,19 +60,19 @@ export default function CumulativeProfitChart() {
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
   const formatYAxis = (value: number) => `${value.toFixed(2)}%`;
-  const formatTooltip = (value: number) => [`${value.toFixed(2)}%`, "Cumulative"];
+  const formatTooltip = (value: number) => [`${value.toFixed(2)}%`, "Cumulato"];
 
   return (
-    <Card className="bg-white shadow-sm h-full">
-      <CardHeader className="pb-2 pt-4 px-6">
-        <CardTitle className="text-lg font-semibold text-slate-800">
+    <Card className="seasonax-card h-full">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-lg">
           Cumulative Profit ({startDay} – {endDay})
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-4 pb-4">
+      <CardContent>
         {loading && <div className="flex justify-center items-center h-64">Loading...</div>}
         {!loading && (!data || data.length === 0) && (
-          <div className="flex justify-center items-center h-64 text-slate-500">No data available</div>
+          <div className="flex justify-center items-center h-64">No data available</div>
         )}
         {!loading && data?.length > 0 && (
           <div className="h-64">
@@ -83,21 +82,21 @@ export default function CumulativeProfitChart() {
                 margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                <XAxis
-                  dataKey="year"
-                  tick={{ fontSize: 12 }}
-                  padding={{ left: 10, right: 10 }}
+                <XAxis 
+                  dataKey="year" 
+                  tick={{ fontSize: 12 }} 
+                  padding={{ left: 10, right: 10 }} 
                 />
-                <YAxis
+                <YAxis 
                   dataKey="cumulative"
                   tickFormatter={formatYAxis}
                   width={60}
                   tick={{ fontSize: 12 }}
                   domain={["auto", "auto"]}
                 />
-                <Tooltip
-                  formatter={formatTooltip}
-                  labelFormatter={(year) => `Year: ${year}`}
+                <Tooltip 
+                  formatter={formatTooltip} 
+                  labelFormatter={(year) => `Year: ${year}`} 
                 />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
                 <Line

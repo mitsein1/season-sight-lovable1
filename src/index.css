@@ -97,7 +97,7 @@
 
 @layer components {
   .seasonax-card {
-    @apply rounded-lg border bg-white p-4 shadow-sm transition-all hover:shadow-md;
+    @apply rounded-lg border bg-card p-4 shadow-sm transition-all hover:shadow-md;
   }
   
   .seasonax-input {

@@ -24,7 +24,7 @@ export default function Navbar() {
   };
   
   return (
-    <div className="sticky top-0 z-10 border-b bg-white shadow-sm backdrop-blur-md">
+    <div className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-md">
       <div className="container mx-auto py-3 px-4">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
@@ -35,14 +35,13 @@ export default function Navbar() {
           
           <div className="flex flex-wrap items-center gap-4">
             <AssetSelector />
-            <DateRangePicker />
             <YearsBackSelector />
+            <DateRangePicker />
             <Button 
               variant="outline" 
               size="sm" 
               onClick={handleDownload}
               disabled={isDownloading}
-              className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
             >
               <Download className="mr-2 h-4 w-4" />
               Export CSV
