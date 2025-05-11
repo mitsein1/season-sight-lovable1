@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
 import PriceChart from "@/components/PriceChart";
@@ -8,6 +9,7 @@ import MetricsCard from "@/components/MetricsCard";
 import SeasonalityChart from "@/components/SeasonalityChart";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchProfitSummary, fetchGainsLosses, fetchMiscMetrics } from "@/services/api";
+
 export default function Dashboard() {
   const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
   
@@ -95,12 +97,12 @@ export default function Dashboard() {
                   ? [
                       {
                         label: "Total Profit",
-                        value: ${profitData.total_profit?.toFixed(2)}%,
+                        value: `${profitData.total_profit?.toFixed(2)}%`,
                         valueType: profitData.total_profit >= 0 ? "positive" : "negative",
                       },
                       {
                         label: "Average Profit",
-                        value: ${profitData.average_profit?.toFixed(2)}%,
+                        value: `${profitData.average_profit?.toFixed(2)}%`,
                         valueType: profitData.average_profit >= 0 ? "positive" : "negative",
                       },
                     ]
@@ -138,17 +140,17 @@ export default function Dashboard() {
                       },
                       {
                         label: "Profit Percentage",
-                        value: ${gainsData.profit_percentage?.toFixed(2)}%,
+                        value: `${gainsData.profit_percentage?.toFixed(2)}%`,
                         valueType: gainsData.profit_percentage >= 0 ? "positive" : "negative",
                       },
                       {
                         label: "Max Profit",
-                        value: ${gainsData.max_profit?.toFixed(2)}%,
+                        value: `${gainsData.max_profit?.toFixed(2)}%`,
                         valueType: "positive",
                       },
                       {
                         label: "Max Loss",
-                        value: ${gainsData.max_loss?.toFixed(2)}%,
+                        value: `${gainsData.max_loss?.toFixed(2)}%`,
                         valueType: "negative",
                       },
                     ]
