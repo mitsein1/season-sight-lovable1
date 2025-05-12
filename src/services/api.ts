@@ -232,17 +232,7 @@ export const fetchSeasonality = async (
   return handleResponse<Seasonality>(response);
 };
 
-// Lista degli asset per il dropdown
-export const availableAssets = [
-  { value: "AAPL",    label: "Apple Inc. (AAPL)" },
-  { value: "MSFT",    label: "Microsoft Corp. (MSFT)" },
-  { value: "GOOGL",   label: "Alphabet Inc. (GOOGL)" },
-  { value: "AMZN",    label: "Amazon.com Inc. (AMZN)" },
-  { value: "TSLA",    label: "Tesla Inc. (TSLA)" },
-  { value: "BTC-USD", label: "Bitcoin (BTC-USD)" },
-  { value: "ETH-USD", label: "Ethereum (ETH-USD)" },
-  { value: "EURUSD",  label: "EUR/USD" },
-];
+
 export const downloadCSV = async (
   asset: string,
   startDay: string,
