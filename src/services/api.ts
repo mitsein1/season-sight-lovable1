@@ -351,3 +351,12 @@ export const fetchScreenerResults = async (
   return handleResponse<ScreenerPattern[]>(res);
 };
 
+export interface MarketGroups {
+  [group: string]: string[]; // es. "NASDAQ 100": ["AAPL", "MSFT"]
+}
+
+export const fetchMarketGroups = async (): Promise<MarketGroups> => {
+  const res = await fetch(`${API_BASE_URL}/api/market-groups`);
+  return handleResponse<MarketGroups>(res);
+};
+
