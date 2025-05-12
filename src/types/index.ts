@@ -1,5 +1,4 @@
 
-
 export interface PatternReturnItem {
   year: number;
   return: number;
@@ -23,4 +22,3 @@ export interface TradeStats {
   win_pct: number;
   loss_pct: number;
 }
-
