@@ -278,3 +278,22 @@ export const fetchTradeStats = async (
     loss_pct:     raw.loss_ratio     ?? raw.loss_pct       ?? 0,
   };
 };
+
+
+export interface SeasonalityRangeSmoothed {
+  dates: string[];
+  values: number[];
+}
+
+export const fetchSeasonalityRangeSmoothed = async (
+  asset: string,
+  yearsBack: number,
+  startDay: string,
+  endDay: string
+): Promise<SeasonalityRangeSmoothed> => {
+  const params = new URLSearchParams({ asset, years_back: yearsBack.toString(), start_day: startDay, end_day: endDay });
+  const url = `${API_BASE_URL}/api/seasonality/data-range-savgol?${params.toString()}`;
+  console.log("→ Fetching seasonality data (smoothed):", url);
+  const res = await fetch(url);
+  return handleResponse<SeasonalityRangeSmoothed>(res);
+};
