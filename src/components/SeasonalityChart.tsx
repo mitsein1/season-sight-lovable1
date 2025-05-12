@@ -1,3 +1,4 @@
+
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSeasonalityRangeSmoothed } from "@/services/api";
@@ -10,11 +11,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function SeasonalitySmoothedChart() {
   const { asset, startDay, endDay, yearsBack } = useSeasonax();
 
-  const { data, isLoading, error } = useQuery(
-    ["seasonality-smoothed", asset, yearsBack, startDay, endDay],
-    () => fetchSeasonalityRangeSmoothed(asset, yearsBack, startDay, endDay),
-    { staleTime: 1000 * 60 * 60 } // 1h cache
-  );
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["seasonality-smoothed", asset, yearsBack, startDay, endDay],
+    queryFn: () => fetchSeasonalityRangeSmoothed(asset, yearsBack, startDay, endDay),
+    staleTime: 1000 * 60 * 60 // 1h cache
+  });
 
   if (isLoading) return <Skeleton className="h-[300px] w-full bg-slate-800" />;
   if (error || !data) return <div className="text-center py-8">Failed to load data</div>;
