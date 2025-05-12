@@ -6,6 +6,12 @@ import { TradeStats } from "@/types";
 import { toast } from "sonner";
 import { Card, CardContent, CardTitle } from "@/components/ui/card";
 
+// Helper function to safely format numbers with toFixed
+const safeToFixed = (value: number | undefined | null, digits: number = 2): string => {
+  if (value === undefined || value === null) return "N/A";
+  return value.toFixed(digits);
+};
+
 export default function TradeStatsCard() {
   const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
   const [loading, setLoading] = useState(true);
@@ -44,22 +50,22 @@ export default function TradeStatsCard() {
             </div>
             <div className="text-center">
               <div className="text-slate-500 text-sm mb-1">Winning Trades</div>
-              <div className="text-2xl font-bold text-seasonax-positive">{data.winning_trades}</div>
+              <div className="text-2xl font-bold text-seasonax-positive">{data.wins}</div>
             </div>
             <div className="text-center">
               <div className="text-slate-500 text-sm mb-1">Losing Trades</div>
-              <div className="text-2xl font-bold text-seasonax-negative">{data.losing_trades}</div>
+              <div className="text-2xl font-bold text-seasonax-negative">{data.losses}</div>
             </div>
             <div className="text-center">
               <div className="text-slate-500 text-sm mb-1">Win %</div>
               <div className={`text-2xl font-bold ${data.win_pct >= 0 ? "text-seasonax-positive" : "text-seasonax-negative"}`}>
-                {data.win_pct.toFixed(2)}%
+                {safeToFixed(data.win_pct)}%
               </div>
             </div>
             <div className="text-center">
               <div className="text-slate-500 text-sm mb-1">Loss %</div>
               <div className={`text-2xl font-bold ${data.loss_pct >= 0 ? "text-seasonax-positive" : "text-seasonax-negative"}`}>
-                {data.loss_pct.toFixed(2)}%
+                {safeToFixed(data.loss_pct)}%
               </div>
             </div>
           </div>

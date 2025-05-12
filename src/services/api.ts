@@ -75,33 +75,11 @@ export interface Seasonality {
 
 export interface TradeStats {
   total_trades: number;
-  wins:         number;
-  losses:       number;
+  wins:         number;  // Changed from winning_trades
+  losses:       number;  // Changed from losing_trades
   win_pct:      number;
   loss_pct:     number;
 }
-
-export const fetchTradeStats = async (
-  asset: string,
-  startDay: string,
-  endDay: string,
-  yearsBack?: number
-): Promise<TradeStats> => {
-  const params = new URLSearchParams({
-    asset,
-    start_day: startDay,
-    end_day: endDay,
-  });
-  if (yearsBack !== undefined) {
-    params.append("years_back", yearsBack.toString());
-  }
-
-  const url = `${API_BASE_URL}/api/trade-stats?${params.toString()}`;
-  console.log("🔄 Fetching trade stats:", url);
-  
-  const res = await fetch(url);
-  return handleResponse<TradeStats>(res);
-};
 
 // API functions
 
@@ -267,4 +245,26 @@ export const downloadCSV = async (
   document.body.appendChild(a);
   a.click();
   a.remove();
+};
+
+export const fetchTradeStats = async (
+  asset: string,
+  startDay: string,
+  endDay: string,
+  yearsBack?: number
+): Promise<TradeStats> => {
+  const params = new URLSearchParams({
+    asset,
+    start_day: startDay,
+    end_day: endDay,
+  });
+  if (yearsBack !== undefined) {
+    params.append("years_back", yearsBack.toString());
+  }
+
+  const url = `${API_BASE_URL}/api/trade-stats?${params.toString()}`;
+  console.log("🔄 Fetching trade stats:", url);
+  
+  const res = await fetch(url);
+  return handleResponse<TradeStats>(res);
 };

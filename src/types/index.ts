@@ -14,10 +14,11 @@ export interface MiscMetrics {
   current_streak: number;
   gains: number;
 }
+
 export interface TradeStats {
-  total_trades:    number;
-  winning_trades:  number;
-  losing_trades:   number;
-  win_pct:         number;
-  loss_pct:        number;
+  total_trades: number;
+  wins: number;          // Changed from winning_trades to match the API
+  losses: number;        // Changed from losing_trades to match the API
+  win_pct: number;
+  loss_pct: number;
 }
