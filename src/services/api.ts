@@ -86,19 +86,19 @@ export interface ScreenerPattern {
   rank: number;
   symbol: string;
   instrument: string;
-  annualizedReturn: number;
-  averageReturn: number;
-  medianReturn: number;
-  patternStart: string;
-  patternEnd: string;
-  calendarDays: number;
-  maxProfit: number;
-  maxLoss: number;
-  winners: number;
-  trades: number;
-  winRatio: number;
-  stdDev: number;
-  sharpeRatio: number;
+  annualized_return: number;
+  average_return: number;
+  median_return: number;
+  pattern_start: string; // "MM-DD"
+  pattern_end: string;   // "MM-DD"
+  calendar_days: number;
+  max_profit: number;
+  max_loss: number;
+  num_winners: number;
+  num_trades: number;
+  win_ratio: number;
+  std_dev: number;
+  sharpe_ratio: number;
 }
 
 export interface ScreenerResponse {
@@ -326,23 +326,21 @@ export const fetchSeasonalityRangeSmoothed = async (
 export const fetchScreenerResults = async (
   marketGroup: string,
   startDateOffset: string,
-  patternLength: string,
-  yearsBack: string,
-  minWinPct: string,
-  direction: string = "long"
-): Promise<ScreenerResponse> => {
-  const url = new URL(`${API_BASE_URL}/api/screener`);
-  
-  // Add query parameters
-  url.searchParams.append("marketGroup", marketGroup);
-  url.searchParams.append("startDateOffset", startDateOffset);
-  url.searchParams.append("patternLength", patternLength);
-  url.searchParams.append("yearsBack", yearsBack);
-  url.searchParams.append("minWinPct", minWinPct);
-  url.searchParams.append("direction", direction);
-  
-  console.log(`Fetching screener results with URL: ${url.toString()}`);
-  
-  const response = await fetch(url.toString());
-  return handleResponse<ScreenerResponse>(response);
+  patternLength: number | string,
+  yearsBack: number | string,
+  minWinPct: number | string
+): Promise<ScreenerPattern[]> => {
+  const params = new URLSearchParams({
+    market_group: marketGroup,
+    start_date_offset: startDateOffset,
+    pattern_length: patternLength.toString(),
+    years_back: yearsBack.toString(),
+    min_win_pct: minWinPct.toString(),
+    direction: "long"
+  });
+  const url = `${API_BASE_URL}/api/screener?${params.toString()}`;
+  console.log("🔍 Fetching screener:", url);
+  const res = await fetch(url, { method: "GET" });  // GET is important
+  const data = await handleResponse<ScreenerResponse>(res);
+  return data.patterns;
 };

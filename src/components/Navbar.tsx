@@ -7,11 +7,14 @@ import YearsBackSelector from "./YearsBackSelector";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { downloadCSV } from "@/services/api";
-import ThemeToggle from "./ThemeToggle";
+import { useLocation } from "react-router-dom";
+import MainNavigation from "./MainNavigation";
 
 export default function Navbar() {
   const { asset, startDay, endDay } = useSeasonax();
   const [isDownloading, setIsDownloading] = useState(false);
+  const location = useLocation();
+  const isDashboard = location.pathname === "/" || location.pathname === "/dashboard";
   
   const handleDownload = async () => {
     setIsDownloading(true);
@@ -25,33 +28,30 @@ export default function Navbar() {
   };
   
   return (
-    <div className="sticky top-0 z-10 border-b bg-white dark:bg-slate-800 shadow-sm backdrop-blur-md">
-      <div className="container mx-auto py-3 px-4">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-seasonax-primary dark:text-seasonax-secondary">
-              Seasonax
-            </h1>
-            <ThemeToggle />
-          </div>
-          
-          <div className="flex flex-wrap items-center gap-4">
-            <AssetSelector />
-            <DateRangePicker />
-            <YearsBackSelector />
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleDownload}
-              disabled={isDownloading}
-              className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700"
-            >
-              <Download className="mr-2 h-4 w-4" />
-              Export CSV
-            </Button>
+    <>
+      <MainNavigation />
+      
+      {isDashboard && (
+        <div className="border-b bg-white dark:bg-slate-900 py-3 px-4 shadow-sm">
+          <div className="container mx-auto">
+            <div className="flex flex-wrap items-center justify-end gap-4">
+              <AssetSelector />
+              <DateRangePicker />
+              <YearsBackSelector />
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleDownload}
+                disabled={isDownloading}
+                className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-800 dark:border-slate-700 dark:text-white dark:hover:bg-slate-700"
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export CSV
+              </Button>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+      )}
+    </>
   );
 }

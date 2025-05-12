@@ -1,6 +1,7 @@
+
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchScreenerResults } from "@/services/api";
+import { fetchScreenerResults, ScreenerPattern } from "@/services/api";
 import Navbar from "@/components/Navbar";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -19,12 +20,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { useSeasonax } from "@/context/SeasonaxContext";
 
 type SortOrder = "asc" | "desc";
 
 interface SortState {
-  column: string | null;
+  column: keyof ScreenerPattern | null;
   order: SortOrder;
 }
 
@@ -32,9 +32,9 @@ const ScreenerPage = () => {
   // Filter state
   const [marketGroup, setMarketGroup] = useState("NASDAQ 100");
   const [startDateOffset, setStartDateOffset] = useState("today");
-  const [patternLength, setPatternLength] = useState("60");
-  const [yearsBack, setYearsBack] = useState("15");
-  const [minWinPct, setMinWinPct] = useState("55");
+  const [patternLength, setPatternLength] = useState(60);
+  const [yearsBack, setYearsBack] = useState(15);
+  const [minWinPct, setMinWinPct] = useState(55);
   const [sortState, setSortState] = useState<SortState>({
     column: "rank",
     order: "asc",
@@ -43,11 +43,12 @@ const ScreenerPage = () => {
   // Fetch data with React Query v5
   const { data, isLoading, error } = useQuery({
     queryKey: ["screener", marketGroup, startDateOffset, patternLength, yearsBack, minWinPct],
-    queryFn: () => fetchScreenerResults(marketGroup, startDateOffset, patternLength, yearsBack, minWinPct, "long"),
+    queryFn: () => fetchScreenerResults(marketGroup, startDateOffset, patternLength, yearsBack, minWinPct),
+    keepPreviousData: true,
   });
 
   // Handle sort
-  const handleSort = (column: string) => {
+  const handleSort = (column: keyof ScreenerPattern) => {
     setSortState((prev) => ({
       column,
       order: prev.column === column && prev.order === "asc" ? "desc" : "asc",
@@ -56,13 +57,13 @@ const ScreenerPage = () => {
 
   // Sort data
   const sortedData = React.useMemo(() => {
-    if (!data || !data.patterns) return [];
+    if (!data) return [];
     
-    return [...data.patterns].sort((a, b) => {
+    return [...data].sort((a, b) => {
       if (sortState.column === null) return 0;
       
-      const valueA = a[sortState.column as keyof typeof a];
-      const valueB = b[sortState.column as keyof typeof b];
+      const valueA = a[sortState.column];
+      const valueB = b[sortState.column];
       
       if (typeof valueA === 'number' && typeof valueB === 'number') {
         return sortState.order === 'asc' ? valueA - valueB : valueB - valueA;
@@ -82,6 +83,7 @@ const ScreenerPage = () => {
   React.useEffect(() => {
     if (error) {
       toast.error("Failed to load screener data");
+      console.error("Screener API error:", error);
     }
   }, [error]);
 
@@ -95,27 +97,27 @@ const ScreenerPage = () => {
     { value: "+30d", label: "In 30 days" },
   ];
   const durationOptions = [
-    { value: "7", label: "7 days" },
-    { value: "15", label: "15 days" },
-    { value: "30", label: "30 days" },
-    { value: "60", label: "31-60 days" },
+    { value: 7, label: "7 days" },
+    { value: 15, label: "15 days" },
+    { value: 30, label: "30 days" },
+    { value: 60, label: "31-60 days" },
   ];
   const yearsBackOptions = [
-    { value: "3", label: "3 years" },
-    { value: "5", label: "5 years" },
-    { value: "10", label: "10 years" },
-    { value: "15", label: "15 years" },
-    { value: "20", label: "20 years" },
-    { value: "25", label: "25 years" },
+    { value: 3, label: "3 years" },
+    { value: 5, label: "5 years" },
+    { value: 10, label: "10 years" },
+    { value: 15, label: "15 years" },
+    { value: 20, label: "20 years" },
+    { value: 25, label: "25 years" },
     { value: "max", label: "Max" },
   ];
   const winPctOptions = Array.from({ length: 21 }, (_, i) => ({ 
-    value: (i * 5).toString(), 
+    value: i * 5, 
     label: `${i * 5}%` 
   }));
 
   // Table column headers with sort indicators
-  const renderSortIndicator = (column: string) => {
+  const renderSortIndicator = (column: keyof ScreenerPattern) => {
     if (sortState.column !== column) return null;
     return sortState.order === "asc" ? " ↑" : " ↓";
   };
@@ -162,13 +164,16 @@ const ScreenerPage = () => {
 
           <div>
             <label className="text-sm font-medium mb-1 block">Examination period:</label>
-            <Select value={yearsBack} onValueChange={setYearsBack}>
+            <Select 
+              value={yearsBack.toString()} 
+              onValueChange={(value) => setYearsBack(Number(value) || value)}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select years" />
               </SelectTrigger>
               <SelectContent>
                 {yearsBackOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem key={option.value.toString()} value={option.value.toString()}>
                     {option.label}
                   </SelectItem>
                 ))}
@@ -178,13 +183,16 @@ const ScreenerPage = () => {
 
           <div>
             <label className="text-sm font-medium mb-1 block">Time Period:</label>
-            <Select value={patternLength} onValueChange={setPatternLength}>
+            <Select 
+              value={patternLength.toString()} 
+              onValueChange={(value) => setPatternLength(Number(value))}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select duration" />
               </SelectTrigger>
               <SelectContent>
                 {durationOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem key={option.value.toString()} value={option.value.toString()}>
                     {option.label}
                   </SelectItem>
                 ))}
@@ -194,13 +202,16 @@ const ScreenerPage = () => {
 
           <div>
             <label className="text-sm font-medium mb-1 block">Filter: Win %</label>
-            <Select value={minWinPct} onValueChange={setMinWinPct}>
+            <Select 
+              value={minWinPct.toString()} 
+              onValueChange={(value) => setMinWinPct(Number(value))}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select win %" />
               </SelectTrigger>
               <SelectContent>
                 {winPctOptions.map(option => (
-                  <SelectItem key={option.value} value={option.value}>
+                  <SelectItem key={option.value.toString()} value={option.value.toString()}>
                     {option.label}
                   </SelectItem>
                 ))}
@@ -236,7 +247,7 @@ const ScreenerPage = () => {
         {data && (
           <div className="mb-4">
             <p className="text-lg font-medium">
-              Found {data.patterns?.length || 0} patterns
+              Found {data.length || 0} patterns
             </p>
           </div>
         )}
@@ -279,81 +290,81 @@ const ScreenerPage = () => {
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("annualizedReturn")}
+                    onClick={() => handleSort("annualized_return")}
                   >
-                    Annualized return{renderSortIndicator("annualizedReturn")}
+                    Annualized return{renderSortIndicator("annualized_return")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("averageReturn")}
+                    onClick={() => handleSort("average_return")}
                   >
-                    Average return{renderSortIndicator("averageReturn")}
+                    Average return{renderSortIndicator("average_return")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("medianReturn")}
+                    onClick={() => handleSort("median_return")}
                   >
-                    Median return{renderSortIndicator("medianReturn")}
+                    Median return{renderSortIndicator("median_return")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("patternStart")}
+                    onClick={() => handleSort("pattern_start")}
                   >
-                    Pattern Start{renderSortIndicator("patternStart")}
+                    Pattern Start{renderSortIndicator("pattern_start")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("patternEnd")}
+                    onClick={() => handleSort("pattern_end")}
                   >
-                    Pattern End{renderSortIndicator("patternEnd")}
+                    Pattern End{renderSortIndicator("pattern_end")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("calendarDays")}
+                    onClick={() => handleSort("calendar_days")}
                   >
-                    Cal. Days{renderSortIndicator("calendarDays")}
+                    Cal. Days{renderSortIndicator("calendar_days")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("maxProfit")}
+                    onClick={() => handleSort("max_profit")}
                   >
-                    Max Profit{renderSortIndicator("maxProfit")}
+                    Max Profit{renderSortIndicator("max_profit")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("maxLoss")}
+                    onClick={() => handleSort("max_loss")}
                   >
-                    Max Loss{renderSortIndicator("maxLoss")}
+                    Max Loss{renderSortIndicator("max_loss")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("winners")}
+                    onClick={() => handleSort("num_winners")}
                   >
-                    No. of Winners{renderSortIndicator("winners")}
+                    No. of Winners{renderSortIndicator("num_winners")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("trades")}
+                    onClick={() => handleSort("num_trades")}
                   >
-                    No. of Trades{renderSortIndicator("trades")}
+                    No. of Trades{renderSortIndicator("num_trades")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("winRatio")}
+                    onClick={() => handleSort("win_ratio")}
                   >
-                    Win Ratio{renderSortIndicator("winRatio")}
+                    Win Ratio{renderSortIndicator("win_ratio")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("stdDev")}
+                    onClick={() => handleSort("std_dev")}
                   >
-                    Std Dev{renderSortIndicator("stdDev")}
+                    Std Dev{renderSortIndicator("std_dev")}
                   </TableHead>
                   <TableHead 
                     className="cursor-pointer" 
-                    onClick={() => handleSort("sharpeRatio")}
+                    onClick={() => handleSort("sharpe_ratio")}
                   >
-                    Sharpe Ratio{renderSortIndicator("sharpeRatio")}
+                    Sharpe Ratio{renderSortIndicator("sharpe_ratio")}
                   </TableHead>
                 </TableRow>
               </TableHeader>
@@ -363,40 +374,40 @@ const ScreenerPage = () => {
                     <TableCell>{pattern.rank}</TableCell>
                     <TableCell className="font-medium">{pattern.symbol}</TableCell>
                     <TableCell>{pattern.instrument}</TableCell>
-                    <TableCell className={pattern.annualizedReturn > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {typeof pattern.annualizedReturn === 'number' ? 
-                        `${pattern.annualizedReturn > 0 ? '+' : ''}${pattern.annualizedReturn.toFixed(2)}%` : 
-                        pattern.annualizedReturn}
+                    <TableCell className={pattern.annualized_return > 0 ? 'text-green-600' : 'text-red-600'}>
+                      {typeof pattern.annualized_return === 'number' ? 
+                        `${pattern.annualized_return > 0 ? '+' : ''}${pattern.annualized_return.toFixed(2)}%` : 
+                        pattern.annualized_return}
                     </TableCell>
-                    <TableCell className={pattern.averageReturn > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {typeof pattern.averageReturn === 'number' ?
-                        `${pattern.averageReturn > 0 ? '+' : ''}${pattern.averageReturn.toFixed(2)}%` :
-                        pattern.averageReturn}
+                    <TableCell className={pattern.average_return > 0 ? 'text-green-600' : 'text-red-600'}>
+                      {typeof pattern.average_return === 'number' ?
+                        `${pattern.average_return > 0 ? '+' : ''}${pattern.average_return.toFixed(2)}%` :
+                        pattern.average_return}
                     </TableCell>
-                    <TableCell className={pattern.medianReturn > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {typeof pattern.medianReturn === 'number' ? 
-                        `${pattern.medianReturn > 0 ? '+' : ''}${pattern.medianReturn.toFixed(2)}%` : 
-                        pattern.medianReturn}
+                    <TableCell className={pattern.median_return > 0 ? 'text-green-600' : 'text-red-600'}>
+                      {typeof pattern.median_return === 'number' ? 
+                        `${pattern.median_return > 0 ? '+' : ''}${pattern.median_return.toFixed(2)}%` : 
+                        pattern.median_return}
                     </TableCell>
-                    <TableCell>{pattern.patternStart}</TableCell>
-                    <TableCell>{pattern.patternEnd}</TableCell>
-                    <TableCell>{pattern.calendarDays}</TableCell>
+                    <TableCell>{pattern.pattern_start}</TableCell>
+                    <TableCell>{pattern.pattern_end}</TableCell>
+                    <TableCell>{pattern.calendar_days}</TableCell>
                     <TableCell className="text-green-600">
-                      {typeof pattern.maxProfit === 'number' ? `+${pattern.maxProfit.toFixed(2)}%` : pattern.maxProfit}
+                      {typeof pattern.max_profit === 'number' ? `+${pattern.max_profit.toFixed(2)}%` : pattern.max_profit}
                     </TableCell>
                     <TableCell className="text-red-600">
-                      {typeof pattern.maxLoss === 'number' ? pattern.maxLoss.toFixed(2) + '%' : pattern.maxLoss}
+                      {typeof pattern.max_loss === 'number' ? pattern.max_loss.toFixed(2) + '%' : pattern.max_loss}
                     </TableCell>
-                    <TableCell>{pattern.winners}</TableCell>
-                    <TableCell>{pattern.trades}</TableCell>
+                    <TableCell>{pattern.num_winners}</TableCell>
+                    <TableCell>{pattern.num_trades}</TableCell>
                     <TableCell>
-                      {typeof pattern.winRatio === 'number' ? `${pattern.winRatio}%` : pattern.winRatio}
+                      {typeof pattern.win_ratio === 'number' ? `${pattern.win_ratio}%` : pattern.win_ratio}
                     </TableCell>
-                    <TableCell>{pattern.stdDev?.toFixed(2)}%</TableCell>
-                    <TableCell>{pattern.sharpeRatio?.toFixed(2)}</TableCell>
+                    <TableCell>{pattern.std_dev?.toFixed(2)}%</TableCell>
+                    <TableCell>{pattern.sharpe_ratio?.toFixed(2)}</TableCell>
                   </TableRow>
                 ))}
-                {(!data?.patterns || data.patterns.length === 0) && (
+                {(!data || data.length === 0) && (
                   <TableRow>
                     <TableCell colSpan={16} className="text-center py-6">
                       No patterns found with the current filters
