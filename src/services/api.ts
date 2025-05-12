@@ -81,6 +81,30 @@ export interface TradeStats {
   loss_pct:     number;
 }
 
+// New type for Screener pattern
+export interface ScreenerPattern {
+  rank: number;
+  symbol: string;
+  instrument: string;
+  annualizedReturn: number;
+  averageReturn: number;
+  medianReturn: number;
+  patternStart: string;
+  patternEnd: string;
+  calendarDays: number;
+  maxProfit: number;
+  maxLoss: number;
+  winners: number;
+  trades: number;
+  winRatio: number;
+  stdDev: number;
+  sharpeRatio: number;
+}
+
+export interface ScreenerResponse {
+  patterns: ScreenerPattern[];
+}
+
 // API functions
 
 export const fetchPriceSeries = async (
@@ -296,4 +320,29 @@ export const fetchSeasonalityRangeSmoothed = async (
   console.log("→ Fetching seasonality data (smoothed):", url);
   const res = await fetch(url);
   return handleResponse<SeasonalityRangeSmoothed>(res);
+};
+
+// Screener API function
+export const fetchScreenerResults = async (
+  marketGroup: string,
+  startDateOffset: string,
+  patternLength: string,
+  yearsBack: string,
+  minWinPct: string,
+  direction: string = "long"
+): Promise<ScreenerResponse> => {
+  const url = new URL(`${API_BASE_URL}/api/screener`);
+  
+  // Add query parameters
+  url.searchParams.append("marketGroup", marketGroup);
+  url.searchParams.append("startDateOffset", startDateOffset);
+  url.searchParams.append("patternLength", patternLength);
+  url.searchParams.append("yearsBack", yearsBack);
+  url.searchParams.append("minWinPct", minWinPct);
+  url.searchParams.append("direction", direction);
+  
+  console.log(`Fetching screener results with URL: ${url.toString()}`);
+  
+  const response = await fetch(url.toString());
+  return handleResponse<ScreenerResponse>(response);
 };
