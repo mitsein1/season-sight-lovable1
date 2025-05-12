@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchScreenerResults } from "@/services/api";
@@ -20,7 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { SeasonaxProvider } from "@/context/SeasonaxContext";
+import { useSeasonax } from "@/context/SeasonaxContext";
 
 type SortOrder = "asc" | "desc";
 
@@ -29,7 +28,7 @@ interface SortState {
   order: SortOrder;
 }
 
-const ScreenerContent = () => {
+const ScreenerPage = () => {
   // Filter state
   const [marketGroup, setMarketGroup] = useState("NASDAQ 100");
   const [startDateOffset, setStartDateOffset] = useState("today");
@@ -410,15 +409,6 @@ const ScreenerContent = () => {
         )}
       </div>
     </div>
-  );
-};
-
-// The main component that provides the SeasonaxContext
-const ScreenerPage = () => {
-  return (
-    <SeasonaxProvider>
-      <ScreenerContent />
-    </SeasonaxProvider>
   );
 };
 
