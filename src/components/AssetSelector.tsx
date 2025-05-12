@@ -1,73 +1,60 @@
-
-import { useState } from "react";
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { useSeasonax } from "@/context/SeasonaxContext";
-import { fetchMarketGroups } from "@/services/api";
 import { useQuery } from "@tanstack/react-query";
+import { fetchMarketGroups } from "@/services/api";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
-import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+export default function AssetInfoCard() {
+  const { asset, setAsset } = useSeasonax();
 
+  // Fetch market groups and flatten into a single list of assets
+  const { data: marketGroups, isLoading } = useQuery({
+    queryKey: ["market-groups"],
+    queryFn: fetchMarketGroups,
+    staleTime: 1000 * 60 * 60,
+  });
 
-export default function AssetSelector() {
-  const { asset, setAsset, refreshData } = useSeasonax();
-  const [open, setOpen] = useState(false);
-
-  const handleSelect = (value: string) => {
-    setAsset(value);
-    setOpen(false);
-    refreshData();
-  };
+  const allAssets = React.useMemo(() => {
+    if (!marketGroups) return [];
+    return Object.values(marketGroups).flat();
+  }, [marketGroups]);
 
   return (
-    <div className="flex items-center gap-2">
-      <label htmlFor="asset-select" className="seasonax-label whitespace-nowrap">
-        Asset:
-      </label>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Input
-            id="asset-select"
-            className="w-[180px]"
-            value={asset}
-            onChange={(e) => {
-              setAsset(e.target.value.toUpperCase());
-            }}
-            onFocus={() => setOpen(true)}
-          />
-        </PopoverTrigger>
-        <PopoverContent className="w-[180px] p-0">
-          <Command>
-            <CommandInput placeholder="Cerca asset..." />
-            <CommandList>
-              <CommandEmpty>Nessun asset trovato.</CommandEmpty>
-              <CommandGroup>
-                {Array.isArray(availableAssets) && availableAssets.length > 0 ? (
-                  availableAssets.map((option) => (
-                    <CommandItem
-                      key={option.value}
-                      value={option.value}
-                      onSelect={() => handleSelect(option.value)}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          asset === option.value ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {option.label}
-                    </CommandItem>
-                  ))
-                ) : (
-                  <CommandItem>No assets available</CommandItem>
-                )}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    </div>
+    <Card className="bg-white dark:bg-slate-800 shadow-sm border-b-4 border-b-seasonax-primary">
+      <CardContent className="p-4 flex flex-col md:flex-row justify-between items-center">
+        <div>
+          <div className="text-sm text-muted-foreground dark:text-gray-400">
+            Currently analyzing
+          </div>
+          <h1 className="text-2xl font-bold text-seasonax-primary dark:text-seasonax-secondary">
+            {asset}
+          </h1>
+          <div className="text-xs text-muted-foreground dark:text-gray-400">
+            Seasonality and pattern analysis
+          </div>
+        </div>
+        <div className="mt-2 md:mt-0 flex items-center space-x-4">
+          <Select value={asset} onValueChange={setAsset} disabled={isLoading}>
+            <SelectTrigger className="w-36">
+              <SelectValue placeholder="Select asset" />
+            </SelectTrigger>
+            <SelectContent>
+              {allAssets.map((ticker) => (
+                <SelectItem key={ticker} value={ticker}>
+                  {ticker}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
