@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { SeasonaxProvider } from "@/context/SeasonaxContext";
 
 type SortOrder = "asc" | "desc";
 
@@ -28,7 +29,7 @@ interface SortState {
   order: SortOrder;
 }
 
-const ScreenerPage = () => {
+const ScreenerContent = () => {
   // Filter state
   const [marketGroup, setMarketGroup] = useState("NASDAQ 100");
   const [startDateOffset, setStartDateOffset] = useState("today");
@@ -409,6 +410,15 @@ const ScreenerPage = () => {
         )}
       </div>
     </div>
+  );
+};
+
+// The main component that provides the SeasonaxContext
+const ScreenerPage = () => {
+  return (
+    <SeasonaxProvider>
+      <ScreenerContent />
+    </SeasonaxProvider>
   );
 };
 
