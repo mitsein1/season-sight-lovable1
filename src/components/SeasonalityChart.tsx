@@ -11,14 +11,17 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function SeasonalitySmoothedChart() {
   const { asset, yearsBack, setDateRange } = useSeasonax();
 
-  // **STEPS 1+2: fetch sempre su 01-01→12-31**
-  const { data, isLoading, error } = useQuery(
-    ["seasonality-smoothed-fullyear", asset, yearsBack],
-    () => fetchSeasonalityRangeSmoothed(asset, yearsBack, "01-01", "12-31"),
-    { staleTime: 1000 * 60 * 60 }
-  );
+  // ← useQuery con firma OBJECT
+  const { data, isLoading, error } = useQuery<{
+    dates: string[];
+    values: number[];
+  }>({
+    queryKey: ["seasonality-smoothed-fullyear", asset, yearsBack],
+    queryFn: () =>
+      fetchSeasonalityRangeSmoothed(asset, yearsBack, "01-01", "12-31"),
+    staleTime: 1000 * 60 * 60, // 1h
+  });
 
-  // Stato locale per la selezione
   const [selStart, setSelStart] = useState<string | null>(null);
   const [selEnd,   setSelEnd]   = useState<string | null>(null);
   const [selecting, setSelecting] = useState(false);
@@ -26,10 +29,8 @@ export default function SeasonalitySmoothedChart() {
   if (isLoading) return <Skeleton className="h-[300px] w-full bg-slate-800" />;
   if (error || !data) return <div className="text-center py-8">Errore nel caricamento</div>;
 
-  // Prepara array { date, value }
-  const chartData = data.dates.map((d,i) => ({ date: d, value: data.values[i] }));
+  const chartData = data.dates.map((d, i) => ({ date: d, value: data.values[i] }));
 
-  // HANDLER: inizio selezione
   const onMouseDown = (e: any) => {
     if (e?.activeLabel) {
       setSelStart(e.activeLabel);
@@ -37,15 +38,13 @@ export default function SeasonalitySmoothedChart() {
       setSelecting(true);
     }
   };
-  // HANDLER: fine selezione
   const onMouseUp = (e: any) => {
     if (selecting && e?.activeLabel) {
       const a = selStart!, b = e.activeLabel;
-      const [s,eMD] = a <= b ? [a,b] : [b,a];
+      const [s, eMD] = a <= b ? [a, b] : [b, a];
       setSelStart(s);
       setSelEnd(eMD);
       setSelecting(false);
-      // questo imposta GLOBALMENTE startDay/endDay per tutti i widget
       setDateRange(s, eMD);
     }
   };
@@ -69,8 +68,6 @@ export default function SeasonalitySmoothedChart() {
           tickFormatter={v => `${v.toFixed(0)}`}
         />
         <Tooltip formatter={(v: number) => `${v.toFixed(1)}`} />
-        
-        {/* AREA COLORATA PER LA SELEZIONE */}
         {selStart && selEnd && (
           <ReferenceArea
             x1={selStart}
@@ -80,7 +77,6 @@ export default function SeasonalitySmoothedChart() {
             fillOpacity={0.1}
           />
         )}
-
         <Line 
           type="monotone" 
           dataKey="value" 
