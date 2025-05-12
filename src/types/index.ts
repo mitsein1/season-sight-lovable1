@@ -1,4 +1,5 @@
 
+
 export interface PatternReturnItem {
   year: number;
   return: number;
@@ -6,11 +7,11 @@ export interface PatternReturnItem {
 
 export interface MiscMetrics {
   trades: number;
-  calendar_days: number;
-  std_dev: number;
-  sortino_ratio: number;
-  sharpe_ratio: number;
-  volatility: number;
+  calendar_days: number | null;
+  std_dev: number | null;
+  sortino_ratio: number | null;
+  sharpe_ratio: number | null;
+  volatility: number | null;
   current_streak: number;
   gains: number;
 }
@@ -22,3 +23,4 @@ export interface TradeStats {
   win_pct: number;
   loss_pct: number;
 }
+

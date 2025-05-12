@@ -6,6 +6,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MiscMetrics } from "@/types";
 import { toast } from "sonner";
 
+// Helper function to safely format numbers with toFixed
+const safeToFixed = (value: number | undefined | null, digits: number = 2): string => {
+  if (value === undefined || value === null) return "N/A";
+  return value.toFixed(digits);
+};
+
 export default function TechnicalMetricsCard() {
   const { asset, startDay, endDay, yearsBack, refreshCounter } = useSeasonax();
   const [loading, setLoading] = useState(true);
@@ -55,19 +61,19 @@ export default function TechnicalMetricsCard() {
               <div className="text-xs text-slate-500">Calendar days</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{data.volatility.toFixed(2)}</div>
+              <div className="text-lg font-bold">{safeToFixed(data.volatility)}</div>
               <div className="text-xs text-slate-500">Volatility</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{data.sharpe_ratio.toFixed(2)}</div>
+              <div className="text-lg font-bold">{safeToFixed(data.sharpe_ratio)}</div>
               <div className="text-xs text-slate-500">Sharpe ratio</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{data.sortino_ratio.toFixed(2)}</div>
+              <div className="text-lg font-bold">{safeToFixed(data.sortino_ratio)}</div>
               <div className="text-xs text-slate-500">Sortino ratio</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{data.std_dev.toFixed(2)}</div>
+              <div className="text-lg font-bold">{safeToFixed(data.std_dev)}</div>
               <div className="text-xs text-slate-500">Standard deviation</div>
             </div>
           </div>
