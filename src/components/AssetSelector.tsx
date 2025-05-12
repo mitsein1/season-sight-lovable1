@@ -1,7 +1,9 @@
 
 import { useState } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
-import { availableAssets } from "@/services/api";
+import { fetchMarketGroups } from "@/services/api";
+import { useQuery } from "@tanstack/react-query";
+
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
