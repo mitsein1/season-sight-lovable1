@@ -322,6 +322,8 @@ export const fetchSeasonalityRangeSmoothed = async (
   return handleResponse<SeasonalityRangeSmoothed>(res);
 };
 
+// src/services/api.ts
+
 // Screener API function
 export const fetchScreenerResults = async (
   marketGroup: string,
@@ -331,16 +333,21 @@ export const fetchScreenerResults = async (
   minWinPct: number | string
 ): Promise<ScreenerPattern[]> => {
   const params = new URLSearchParams({
-    market_group: marketGroup,
+    market_group:      marketGroup,
     start_date_offset: startDateOffset,
-    pattern_length: patternLength.toString(),
-    years_back: yearsBack.toString(),
-    min_win_pct: minWinPct.toString(),
-    direction: "long"
+    pattern_length:    String(patternLength),
+    years_back:        String(yearsBack),
+    min_win_pct:       String(minWinPct),
+    direction:         "long",
   });
+
   const url = `${API_BASE_URL}/api/screener?${params.toString()}`;
   console.log("🔍 Fetching screener:", url);
-  const res = await fetch(url, { method: "GET" });  // GET is important
-  const data = await handleResponse<ScreenerResponse>(res);
-  return data.patterns;
+
+  // GET implicito, nessun header Content-Type
+  const res = await fetch(url);
+
+  // Supponiamo che l'API restituisca direttamente un array di ScreenerPattern
+  return handleResponse<ScreenerPattern[]>(res);
 };
+
