@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
 import ScreenerPage from "./pages/ScreenerPage";
+import { SeasonaxProvider } from "@/context/SeasonaxContext";
 
 const queryClient = new QueryClient();
 
