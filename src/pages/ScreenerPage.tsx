@@ -33,7 +33,7 @@ const ScreenerPage = () => {
   const [marketGroup, setMarketGroup] = useState("NASDAQ 100");
   const [startDateOffset, setStartDateOffset] = useState("today");
   const [patternLength, setPatternLength] = useState(60);
-  const [yearsBack, setYearsBack] = useState(15);
+  const [yearsBack, setYearsBack] = useState<number | "max">(15);
   const [minWinPct, setMinWinPct] = useState(55);
   const [sortState, setSortState] = useState<SortState>({
     column: "rank",
@@ -44,7 +44,7 @@ const ScreenerPage = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["screener", marketGroup, startDateOffset, patternLength, yearsBack, minWinPct],
     queryFn: () => fetchScreenerResults(marketGroup, startDateOffset, patternLength, yearsBack, minWinPct),
-    keepPreviousData: true,
+    
   });
 
   // Handle sort
@@ -164,21 +164,19 @@ const ScreenerPage = () => {
 
           <div>
             <label className="text-sm font-medium mb-1 block">Examination period:</label>
-            <Select 
-              value={yearsBack.toString()} 
-              onValueChange={(value) => setYearsBack(Number(value) || value)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select years" />
-              </SelectTrigger>
-              <SelectContent>
-                {yearsBackOptions.map(option => (
-                  <SelectItem key={option.value.toString()} value={option.value.toString()}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Select
+  value={String(yearsBack)}
+  onValueChange={(value) =>
+    setYearsBack(value === "max" ? "max" : Number(value))
+  }
+>
+  {yearsBackOptions.map(option => (
+    <SelectItem key={String(option.value)} value={String(option.value)}>
+      {option.label}
+    </SelectItem>
+  ))}
+</Select>
+
           </div>
 
           <div>
