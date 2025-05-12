@@ -248,15 +248,15 @@ export const downloadCSV = async (
 };
 
 export const fetchTradeStats = async (
-  asset: string,
-  startDay: string,
-  endDay: string,
+  asset:     string,
+  startDay:  string,
+  endDay:    string,
   yearsBack?: number
 ): Promise<TradeStats> => {
   const params = new URLSearchParams({
     asset,
     start_day: startDay,
-    end_day: endDay,
+    end_day:   endDay,
   });
   if (yearsBack !== undefined) {
     params.append("years_back", yearsBack.toString());
@@ -264,7 +264,17 @@ export const fetchTradeStats = async (
 
   const url = `${API_BASE_URL}/api/trade-stats?${params.toString()}`;
   console.log("🔄 Fetching trade stats:", url);
-  
+
   const res = await fetch(url);
-  return handleResponse<TradeStats>(res);
+  // Otteniamo il JSON “raw”
+  const raw = await handleResponse<any>(res);
+
+  // Rimappiamo i campi raw → TradeStats
+  return {
+    total_trades: raw.total_trades ?? raw.trades_count ?? 0,
+    wins:         raw.num_winners    ?? raw.winning_trades ?? 0,
+    losses:       raw.num_losers     ?? raw.losing_trades  ?? 0,
+    win_pct:      raw.win_ratio      ?? raw.win_pct        ?? 0,
+    loss_pct:     raw.loss_ratio     ?? raw.loss_pct       ?? 0,
+  };
 };
