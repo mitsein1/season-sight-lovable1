@@ -21,6 +21,7 @@ export default function TechnicalMetricsCard() {
     const loadData = async () => {
       setLoading(true);
       try {
+        // CORREZIONE: yearsBack deve essere il secondo parametro
         const result = await fetchMiscMetrics(asset, yearsBack, startDay, endDay);
         setData(result);
       } catch (error) {
