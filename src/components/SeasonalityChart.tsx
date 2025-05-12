@@ -1,89 +1,33 @@
-import React, { useState } from "react";
+
+import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchSeasonalityRangeSmoothed } from "@/services/api";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import {
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, ReferenceArea
+  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SeasonalitySmoothedChart() {
-  const { asset, yearsBack, setDateRange } = useSeasonax();
+  const { asset, startDay, endDay, yearsBack } = useSeasonax();
 
-  // ← useQuery con firma OBJECT
-  const { data, isLoading, error } = useQuery<{
-    dates: string[];
-    values: number[];
-  }>({
-    queryKey: ["seasonality-smoothed-fullyear", asset, yearsBack],
-    queryFn: () =>
-      fetchSeasonalityRangeSmoothed(asset, yearsBack, "01-01", "12-31"),
-    staleTime: 1000 * 60 * 60, // 1h
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["seasonality-smoothed", asset, yearsBack, startDay, endDay],
+    queryFn: () => fetchSeasonalityRangeSmoothed(asset, yearsBack, startDay, endDay),
+    staleTime: 1000 * 60 * 60 // 1h cache
   });
 
-  const [selStart, setSelStart] = useState<string | null>(null);
-  const [selEnd,   setSelEnd]   = useState<string | null>(null);
-  const [selecting, setSelecting] = useState(false);
-
   if (isLoading) return <Skeleton className="h-[300px] w-full bg-slate-800" />;
-  if (error || !data) return <div className="text-center py-8">Errore nel caricamento</div>;
-
-  const chartData = data.dates.map((d, i) => ({ date: d, value: data.values[i] }));
-
-  const onMouseDown = (e: any) => {
-    if (e?.activeLabel) {
-      setSelStart(e.activeLabel);
-      setSelEnd(null);
-      setSelecting(true);
-    }
-  };
-  const onMouseUp = (e: any) => {
-    if (selecting && e?.activeLabel) {
-      const a = selStart!, b = e.activeLabel;
-      const [s, eMD] = a <= b ? [a, b] : [b, a];
-      setSelStart(s);
-      setSelEnd(eMD);
-      setSelecting(false);
-      setDateRange(s, eMD);
-    }
-  };
+  if (error || !data) return <div className="text-center py-8">Failed to load data</div>;
 
   return (
     <ResponsiveContainer width="100%" height={300}>
-      <LineChart
-        data={chartData}
-        onMouseDown={onMouseDown}
-        onMouseUp={onMouseUp}
-      >
+      <LineChart data={data.dates.map((d,i) => ({ date: d, value: data.values[i] }))}>
         <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-        <XAxis 
-          dataKey="date"
-          interval={Math.ceil(chartData.length/10)}
-          stroke="#6b7280"
-        />
-        <YAxis 
-          domain={[0,100]} 
-          stroke="#6b7280" 
-          tickFormatter={v => `${v.toFixed(0)}`}
-        />
+        <XAxis dataKey="date" tickFormatter={d => d} interval={Math.ceil(data.dates.length/10)} stroke="#6b7280" />
+        <YAxis domain={[0, 100]} tickFormatter={v => `${v.toFixed(0)}`} stroke="#6b7280" />
         <Tooltip formatter={(v: number) => `${v.toFixed(1)}`} />
-        {selStart && selEnd && (
-          <ReferenceArea
-            x1={selStart}
-            x2={selEnd}
-            strokeOpacity={0.3}
-            fill="#10b981"
-            fillOpacity={0.1}
-          />
-        )}
-        <Line 
-          type="monotone" 
-          dataKey="value" 
-          stroke="#10b981" 
-          strokeWidth={2} 
-          dot={false} 
-        />
+        <Line type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} dot={false} />
       </LineChart>
     </ResponsiveContainer>
   );
