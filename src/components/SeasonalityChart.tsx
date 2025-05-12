@@ -15,14 +15,14 @@ export default function SeasonalitySmoothedChart() {
   const [selectionStart, setSelectionStart] = useState<string | null>(null);
   const [selectionEnd, setSelectionEnd] = useState<string | null>(null);
 
-  // Sempre caricare i dati dell'intero anno indipendentemente dal range di date corrente
+  // Always load full year data regardless of current date range
   const { data, isLoading, error } = useQuery({
     queryKey: ["seasonality-full", asset, yearsBack],
     queryFn: () => fetchSeasonalityRangeSmoothed(asset, yearsBack, "01-01", "12-31"),
     staleTime: 1000 * 60 * 60 // 1h cache
   });
 
-  // Gestione della selezione delle date
+  // Date selection handlers
   const startSelection = (date: string) => {
     setSelecting(true);
     setSelectionStart(date);
@@ -37,9 +37,9 @@ export default function SeasonalitySmoothedChart() {
 
   const finishSelection = () => {
     if (selecting && selectionStart && selectionEnd) {
-      // Formatta le date nel formato MM-DD atteso da setDateRange
+      // Format dates to MM-DD as expected by setDateRange
       const formatDateToMMDD = (dateStr: string) => {
-        // Assumiamo che dateStr sia in formato MM-DD o nel formato restituito dall'API
+        // Ensure we have MM-DD format
         const parts = dateStr.split("-");
         if (parts.length >= 2) {
           return `${parts[0].padStart(2, "0")}-${parts[1].padStart(2, "0")}`;
@@ -47,26 +47,23 @@ export default function SeasonalitySmoothedChart() {
         return dateStr;
       };
       
-      // Determina quale data viene prima
-      const startDate = selectionStart;
-      const endDate = selectionEnd;
+      // Determine date order (start might be after end if dragging backwards)
+      const start = new Date(`2000-${formatDateToMMDD(selectionStart)}`);
+      const end = new Date(`2000-${formatDateToMMDD(selectionEnd)}`);
       
-      // Converti le date in oggetti Date per confrontarle
-      const start = new Date(`2000-${formatDateToMMDD(startDate)}`);
-      const end = new Date(`2000-${formatDateToMMDD(endDate)}`);
-      
-      // Imposta il range di date nel context
+      // Update global date range in context
       if (start <= end) {
-        setDateRange(formatDateToMMDD(startDate), formatDateToMMDD(endDate));
+        setDateRange(formatDateToMMDD(selectionStart), formatDateToMMDD(selectionEnd));
       } else {
-        setDateRange(formatDateToMMDD(endDate), formatDateToMMDD(startDate));
+        setDateRange(formatDateToMMDD(selectionEnd), formatDateToMMDD(selectionStart));
       }
       
+      // Reset selection state
       setSelecting(false);
     }
   };
 
-  // Handle quando il mouse lascia il grafico
+  // Handle mouse leaving the chart area
   const handleMouseLeave = () => {
     if (selecting) {
       finishSelection();
@@ -83,21 +80,21 @@ export default function SeasonalitySmoothedChart() {
       <ResponsiveContainer width="100%" height={300}>
         <LineChart 
           data={data.dates.map((d, i) => ({ date: d, value: data.values[i] }))}
-          onMouseDown={(e) => e.activeLabel && startSelection(e.activeLabel)}
-          onMouseMove={(e) => e.activeLabel && updateSelection(e.activeLabel)}
-          onMouseUp={() => finishSelection()}
+          onMouseDown={(e) => e?.activeLabel && startSelection(e.activeLabel)}
+          onMouseMove={(e) => e?.activeLabel && updateSelection(e.activeLabel)}
+          onMouseUp={finishSelection}
           onMouseLeave={handleMouseLeave}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
           <XAxis 
             dataKey="date" 
-            tickFormatter={d => d} 
+            tickFormatter={(d) => d} 
             interval={Math.ceil(data.dates.length/12)} 
             stroke="#6b7280" 
           />
           <YAxis 
             domain={[0, 100]} 
-            tickFormatter={v => `${v.toFixed(0)}`} 
+            tickFormatter={(v) => `${v.toFixed(0)}`} 
             stroke="#6b7280" 
           />
           <Tooltip 
@@ -117,7 +114,7 @@ export default function SeasonalitySmoothedChart() {
               x1={selectionStart} 
               x2={selectionEnd} 
               fill="#10b981" 
-              fillOpacity={0.1}
+              fillOpacity={0.2}
               stroke="#10b981"
             />
           )}
