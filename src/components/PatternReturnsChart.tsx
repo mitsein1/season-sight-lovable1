@@ -109,11 +109,20 @@ export default function PatternReturnsChart() {
                   labelStyle={{ color: 'var(--foreground)' }}
                   itemStyle={{ color: 'var(--foreground)' }}
                 />
-                <Legend verticalAlign="top" height={24} />
+                {/* Legenda personalizzata colorata */}
+                <Legend
+                  verticalAlign="top"
+                  height={24}
+                  payload={[
+                    { value: 'Profit', id: 'profit', type: 'square', color: '#2ec27e' },
+                    { value: 'Max Rise', id: 'maxRise', type: 'square', color: '#bbf7d0' },
+                    { value: 'Max Drop', id: 'maxDrop', type: 'square', color: '#fecaca' },
+                  ]}
+                />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
 
                 {/* Barra del profit (verde se positivo, rosso se negativo) */}
-                <Bar dataKey="profit" name="Profit" barSize={20}>
+                <Bar dataKey="profit" name="Profit" barSize={20} fill="#2ec27e">
                   {data.map((entry, index) => (
                     <Cell
                       key={`profit-${index}`}
