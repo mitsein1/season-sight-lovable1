@@ -13,15 +13,18 @@ import {
   Legend,
   ReferenceLine,
   Cell,
+  TooltipProps,
 } from "recharts";
 import { toast } from "sonner";
 
-// Tipo dati per il chart: profit, riseExt e dropExt per anno
+// Tipo dati per il chart: profit, riseExt, dropExt, maxRise e maxDrop per anno
 interface PatternReturnsData {
   year:     number;
   profit:   number;
   riseExt:  number;
   dropExt:  number;
+  maxRise:  number;
+  maxDrop:  number;
 }
 
 export default function PatternReturnsChart() {
@@ -48,26 +51,41 @@ export default function PatternReturnsChart() {
     load();
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
-  // Mappa i dati per Recharts con estensioni rialzo/ ribasso
+  // Mappa i dati per Recharts con estensioni e valori grezzi
   const data: PatternReturnsData[] = stats.map(item => {
-    const profit  = item.profit_percentage ?? 0;
-    const maxRise = item.max_rise ?? profit;
-    const maxDrop = item.max_drop ?? profit;
-
-    // Calcola estensioni
-    const riseExt = profit > 0 ? Math.max(maxRise - profit, 0) : 0;
-    const dropExt = profit < 0 ? Math.min(maxDrop - profit, 0) : 0;
-
+    const profit    = item.profit_percentage ?? 0;
+    const maxRise   = item.max_rise         ?? profit;
+    const maxDrop   = item.max_drop         ?? profit;
+    const riseExt   = profit > 0 ? Math.max(maxRise - profit, 0) : 0;
+    const dropExt   = profit < 0 ? Math.min(maxDrop - profit, 0) : 0;
     return {
       year:    item.year,
       profit,
       riseExt,
       dropExt,
+      maxRise,
+      maxDrop,
     };
   });
 
+  // Formatter per tooltip: mostra raw maxRise/maxDrop per le estensioni
   const fmtAxis = (value: number) => `${value.toFixed(0)}%`;
-  const fmtTip = (value: number, name: string) => [`${value.toFixed(2)}%`, name];
+  const fmtTip = (
+    value: number,
+    name: string,
+    props: TooltipProps<number, string>
+  ) => {
+    if (name === "Max Rise") {
+      const v = props.payload?.maxRise;
+      return v !== undefined ? [`${v.toFixed(2)}%`, name] : [`${value.toFixed(2)}%`, name];
+    }
+    if (name === "Max Drop") {
+      const v = props.payload?.maxDrop;
+      return v !== undefined ? [`${v.toFixed(2)}%`, name] : [`${value.toFixed(2)}%`, name];
+    }
+    // Profit
+    return [`${(props.payload?.profit ?? value).toFixed(2)}%`, name];
+  };
 
   return (
     <Card className="bg-white dark:bg-slate-800 shadow-sm h-full">
@@ -76,20 +94,17 @@ export default function PatternReturnsChart() {
           Pattern Returns ({startDay}–{endDay})
         </CardTitle>
       </CardHeader>
-
       <CardContent className="px-4 pb-4">
         {loading && (
           <div className="h-64 flex justify-center items-center text-slate-500 dark:text-slate-400">
             Loading…
           </div>
         )}
-
         {!loading && data.length === 0 && (
           <div className="h-64 flex justify-center items-center text-slate-500 dark:text-slate-400">
             No data
           </div>
         )}
-
         {!loading && data.length > 0 && (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -124,10 +139,7 @@ export default function PatternReturnsChart() {
                 />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
 
-                {/* Stack: dropExt, profit, riseExt */}
-                {data.some(d => d.dropExt !== 0) && (
-                  <Bar dataKey="dropExt" name="Max Drop" stackId="a" barSize={20} fill="#fecaca" />
-                )}
+                {/* Stack: profit, dropExt, riseExt */}
                 <Bar dataKey="profit" name="Profit" stackId="a" barSize={20}>
                   {data.map((entry, idx) => (
                     <Cell
@@ -137,6 +149,9 @@ export default function PatternReturnsChart() {
                     />
                   ))}
                 </Bar>
+                {data.some(d => d.dropExt !== 0) && (
+                  <Bar dataKey="dropExt" name="Max Drop" stackId="a" barSize={20} fill="#fecaca" />
+                )}
                 {data.some(d => d.riseExt !== 0) && (
                   <Bar dataKey="riseExt" name="Max Rise" stackId="a" barSize={20} fill="#bbf7d0" />
                 )}
