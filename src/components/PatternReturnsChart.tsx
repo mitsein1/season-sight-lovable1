@@ -12,12 +12,14 @@ import {
   Tooltip,
   Legend,
   ReferenceLine,
+  Cell,
 } from "recharts";
 import { toast } from "sonner";
 
-// Tipo dati per il chart: Max Rise e Max Drop per anno
+// Tipo dati per il chart: Profit, Max Rise e Max Drop per anno
 interface PatternReturnsData {
-  year: number;
+  year:    number;
+  profit:  number;
   maxRise: number;
   maxDrop: number;
 }
@@ -48,7 +50,8 @@ export default function PatternReturnsChart() {
 
   // Mappa i dati per Recharts
   const data: PatternReturnsData[] = stats.map(item => ({
-    year: item.year,
+    year:    item.year,
+    profit:  item.profit_percentage ?? 0,
     maxRise: item.max_rise ?? 0,
     maxDrop: item.max_drop ?? 0,
   }));
@@ -108,6 +111,17 @@ export default function PatternReturnsChart() {
                 />
                 <Legend verticalAlign="top" height={24} />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
+
+                {/* Barra del profit (verde se positivo, rosso se negativo) */}
+                <Bar dataKey="profit" name="Profit" barSize={20}>
+                  {data.map((entry, index) => (
+                    <Cell
+                      key={`profit-${index}`}
+                      fill={entry.profit >= 0 ? '#2ec27e' : '#e01b24'}
+                      radius={entry.profit >= 0 ? [4, 4, 0, 0] : [0, 0, 4, 4]}
+                    />
+                  ))}
+                </Bar>
 
                 {/* Barre impilate: Max Rise e Max Drop */}
                 <Bar
