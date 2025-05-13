@@ -1,9 +1,10 @@
-
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fetchScreenerResults, ScreenerPattern } from "@/services/api";
+import { useNavigate } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { format, parse } from "date-fns";
 import {
   Table,
   TableBody,
@@ -20,7 +21,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
 
 type SortOrder = "asc" | "desc";
 
@@ -385,48 +385,67 @@ const ScreenerPage = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {sortedData.map((pattern) => (
-                  <TableRow 
-                    key={`${pattern.rank}-${pattern.symbol}`}
-                    className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/50"
-                    onClick={() => handleRowClick(pattern)}
-                  >
-                    <TableCell>{pattern.rank}</TableCell>
-                    <TableCell className="font-medium">{pattern.symbol}</TableCell>
-                    <TableCell>{pattern.instrument}</TableCell>
-                    <TableCell className={pattern.annualized_return > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {typeof pattern.annualized_return === 'number' ? 
-                        `${pattern.annualized_return > 0 ? '+' : ''}${pattern.annualized_return.toFixed(2)}%` : 
-                        pattern.annualized_return}
-                    </TableCell>
-                    <TableCell className={pattern.average_return > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {typeof pattern.average_return === 'number' ?
-                        `${pattern.average_return > 0 ? '+' : ''}${pattern.average_return.toFixed(2)}%` :
-                        pattern.average_return}
-                    </TableCell>
-                    <TableCell className={pattern.median_return > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {typeof pattern.median_return === 'number' ? 
-                        `${pattern.median_return > 0 ? '+' : ''}${pattern.median_return.toFixed(2)}%` : 
-                        pattern.median_return}
-                    </TableCell>
-                    <TableCell>{pattern.pattern_start}</TableCell>
-                    <TableCell>{pattern.pattern_end}</TableCell>
-                    <TableCell>{pattern.calendar_days}</TableCell>
-                    <TableCell className="text-green-600">
-                      {typeof pattern.max_profit === 'number' ? `+${pattern.max_profit.toFixed(2)}%` : pattern.max_profit}
-                    </TableCell>
-                    <TableCell className="text-red-600">
-                      {typeof pattern.max_loss === 'number' ? pattern.max_loss.toFixed(2) + '%' : pattern.max_loss}
-                    </TableCell>
-                    <TableCell>{pattern.num_winners}</TableCell>
-                    <TableCell>{pattern.num_trades}</TableCell>
-                    <TableCell>
-                      {typeof pattern.win_ratio === 'number' ? `${pattern.win_ratio}%` : pattern.win_ratio}
-                    </TableCell>
-                    <TableCell>{pattern.std_dev?.toFixed(2)}%</TableCell>
-                    <TableCell>{pattern.sharpe_ratio?.toFixed(2)}</TableCell>
-                  </TableRow>
-                ))}
+                {sortedData.map((pattern) => {
+                  // Convert dates from "dd MMM" to "MM-dd" format
+                  const isoStart = format(
+                    parse(pattern.pattern_start, "dd MMM", new Date()),
+                    "MM-dd"
+                  );
+                  const isoEnd = format(
+                    parse(pattern.pattern_end, "dd MMM", new Date()),
+                    "MM-dd"
+                  );
+
+                  return (
+                    <TableRow 
+                      key={`${pattern.rank}-${pattern.symbol}`}
+                      className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                      onClick={() =>
+                        navigate(
+                          `/dashboard?asset=${pattern.symbol}` +
+                          `&start_day=${isoStart}` +
+                          `&end_day=${isoEnd}` +
+                          `&years_back=${typeof yearsBack === 'number' ? yearsBack : 15}`
+                        )
+                      }
+                    >
+                      <TableCell>{pattern.rank}</TableCell>
+                      <TableCell className="font-medium">{pattern.symbol}</TableCell>
+                      <TableCell>{pattern.instrument}</TableCell>
+                      <TableCell className={pattern.annualized_return > 0 ? 'text-green-600' : 'text-red-600'}>
+                        {typeof pattern.annualized_return === 'number' ? 
+                          `${pattern.annualized_return > 0 ? '+' : ''}${pattern.annualized_return.toFixed(2)}%` : 
+                          pattern.annualized_return}
+                      </TableCell>
+                      <TableCell className={pattern.average_return > 0 ? 'text-green-600' : 'text-red-600'}>
+                        {typeof pattern.average_return === 'number' ?
+                          `${pattern.average_return > 0 ? '+' : ''}${pattern.average_return.toFixed(2)}%` :
+                          pattern.average_return}
+                      </TableCell>
+                      <TableCell className={pattern.median_return > 0 ? 'text-green-600' : 'text-red-600'}>
+                        {typeof pattern.median_return === 'number' ? 
+                          `${pattern.median_return > 0 ? '+' : ''}${pattern.median_return.toFixed(2)}%` : 
+                          pattern.median_return}
+                      </TableCell>
+                      <TableCell>{pattern.pattern_start}</TableCell>
+                      <TableCell>{pattern.pattern_end}</TableCell>
+                      <TableCell>{pattern.calendar_days}</TableCell>
+                      <TableCell className="text-green-600">
+                        {typeof pattern.max_profit === 'number' ? `+${pattern.max_profit.toFixed(2)}%` : pattern.max_profit}
+                      </TableCell>
+                      <TableCell className="text-red-600">
+                        {typeof pattern.max_loss === 'number' ? pattern.max_loss.toFixed(2) + '%' : pattern.max_loss}
+                      </TableCell>
+                      <TableCell>{pattern.num_winners}</TableCell>
+                      <TableCell>{pattern.num_trades}</TableCell>
+                      <TableCell>
+                        {typeof pattern.win_ratio === 'number' ? `${pattern.win_ratio}%` : pattern.win_ratio}
+                      </TableCell>
+                      <TableCell>{pattern.std_dev?.toFixed(2)}%</TableCell>
+                      <TableCell>{pattern.sharpe_ratio?.toFixed(2)}</TableCell>
+                    </TableRow>
+                  );
+                })}
                 {(!data || data.length === 0) && (
                   <TableRow>
                     <TableCell colSpan={16} className="text-center py-6">
