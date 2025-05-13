@@ -19,7 +19,7 @@ interface LocationState {
 
 export default function Dashboard() {
   const location = useLocation();
-  const { setAsset, setStartDay, setEndDay, setYearsBack, refreshData } = useSeasonax();
+  const { setAsset, setDateRange, setYearsBack, refreshData } = useSeasonax();
   
   // Apply navigation state if available
   useEffect(() => {
@@ -35,13 +35,8 @@ export default function Dashboard() {
         updatedState = true;
       }
       
-      if (startDay) {
-        setStartDay(startDay);
-        updatedState = true;
-      }
-      
-      if (endDay) {
-        setEndDay(endDay);
+      if (startDay && endDay) {
+        setDateRange(startDay, endDay);
         updatedState = true;
       }
       
@@ -58,7 +53,7 @@ export default function Dashboard() {
         window.history.replaceState({}, document.title);
       }
     }
-  }, [location.state, setAsset, setStartDay, setEndDay, setYearsBack, refreshData]);
+  }, [location.state, setAsset, setDateRange, setYearsBack, refreshData]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
