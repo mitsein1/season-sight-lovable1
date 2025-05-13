@@ -30,6 +30,12 @@ interface SortState {
   order: SortOrder;
 }
 
+// Helper function to safely format numbers with toFixed
+const safeToFixed = (value: number | undefined | null, digits: number = 2): string => {
+  if (value === undefined || value === null) return "N/A";
+  return value.toFixed(digits);
+};
+
 export default function ScreenerPage() {
   const navigate = useNavigate();
 
@@ -265,9 +271,9 @@ export default function ScreenerPage() {
                     <TableCell className="font-medium">{pattern.symbol}</TableCell>
                     <TableCell>{pattern.pattern_start}</TableCell>
                     <TableCell>{pattern.pattern_end}</TableCell>
-                    <TableCell>{pattern.win_ratio?.toFixed(1)}%</TableCell>
-                    <TableCell className="text-green-600">+{pattern.average_return?.toFixed(2)}%</TableCell>
-                    <TableCell className="text-red-600">-{Math.abs(pattern.max_loss)?.toFixed(2)}%</TableCell>
+                    <TableCell>{safeToFixed(pattern.win_ratio, 1)}%</TableCell>
+                    <TableCell className="text-green-600">+{safeToFixed(pattern.average_return, 2)}%</TableCell>
+                    <TableCell className="text-red-600">-{safeToFixed(Math.abs(pattern.max_loss), 2)}%</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
