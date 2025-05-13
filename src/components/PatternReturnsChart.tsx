@@ -17,14 +17,14 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 
-// Tipologia dati per il componente
+// Dati per ogni anno: profitto, massimo ribasso e massimo rialzo
 interface PatternReturnsData {
-  year:    number;
-  profit:  number; // profit percentage
-  maxRise: number; // highest peak
-  maxDrop: number; // lowest trough
-  riseExt: number; // spike above profit
-  dropExt: number; // spike below profit
+  year:     number;
+  profit:   number; // valore finale (%)
+  maxRise:  number; // picco massimo positivo (%)
+  maxDrop:  number; // picco massimo negativo (%)
+  riseExt:  number; // estensione sopra il profit
+  dropExt:  number; // estensione sotto il profit
 }
 
 export default function PatternReturnsChart() {
@@ -33,56 +33,43 @@ export default function PatternReturnsChart() {
   const [stats, setStats] = useState<YearlyStatistic[]>([]);
 
   useEffect(() => {
-    const loadData = async () => {
+    async function loadData() {
       setLoading(true);
       try {
         const data = await fetchPatternStatistics(asset, startDay, endDay);
-        const yearNow = new Date().getFullYear();
-        setStats(data.filter(d => d.year >= yearNow - yearsBack));
+        const currentYear = new Date().getFullYear();
+        setStats(data.filter(d => d.year >= currentYear - yearsBack));
       } catch (err) {
         console.error(err);
         toast.error("Failed to load pattern returns");
       } finally {
         setLoading(false);
       }
-    };
+    }
     loadData();
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
-  // Costruzione dei dati per il grafico
+  // Mappatura dati: body e spike assoluti
   const data: PatternReturnsData[] = stats.map(d => {
-  const profit = d.profit_percentage ?? 0;
-  const maxRise = d.max_rise ?? profit;
-  const maxDrop = d.max_drop ?? profit;
-
-  return {
-    year: d.year,
-    profitPos: profit > 0 ? profit : 0,
-    profitNeg: profit < 0 ? profit : 0,
-    riseExt: maxRise > profit && profit >= 0 ? maxRise - profit : (maxRise > 0 && profit < 0 ? maxRise : 0),
-    dropExt: maxDrop < profit && profit <= 0 ? maxDrop - profit : (maxDrop < 0 && profit > 0 ? maxDrop : 0),
-    maxRise,
-    maxDrop,
-  };
-});
-
+    const profit   = d.profit_percentage ?? 0;
+    const maxRise  = d.max_rise         ?? profit;
+    const maxDrop  = d.max_drop         ?? profit;
+    const riseExt  = Math.max(maxRise - profit, 0);
+    const dropExt  = Math.min(maxDrop, 0); // se maxDrop è negativo, prende il valore
+    return { year: d.year, profit, maxRise, maxDrop, riseExt, dropExt };
+  });
 
   // Formatter asse e tooltip
   const fmtAxis = (v: number) => `${v.toFixed(0)}%`;
   const fmtTip = (
-    val: number,
-    key: string,
+    value: number,
+    name: string,
     props: TooltipProps<number, string>
   ) => {
     const payload: any = props.payload;
-    switch (key) {
-      case "Max Rise":
-        return [`${payload.maxRise.toFixed(2)}%`, key];
-      case "Max Drop":
-        return [`${payload.maxDrop.toFixed(2)}%`, key];
-      default:
-        return [`${payload.profit.toFixed(2)}%`, key];
-    }
+    if (name === 'Max Rise') return [`${payload.maxRise.toFixed(2)}%`, name];
+    if (name === 'Max Drop') return [`${payload.maxDrop.toFixed(2)}%`, name];
+    return [`${payload.profit.toFixed(2)}%`, name];
   };
 
   return (
@@ -98,9 +85,9 @@ export default function PatternReturnsChart() {
             Loading…
           </div>
         )}
-        {!loading && data.length === 0 && (
+        {!loading && !data.length && (
           <div className="h-64 flex items-center justify-center text-slate-500 dark:text-slate-400">
-            No data available
+            No data
           </div>
         )}
         {!loading && data.length > 0 && (
@@ -112,7 +99,7 @@ export default function PatternReturnsChart() {
                 <YAxis tickFormatter={fmtAxis} width={60} tick={{ fill: 'var(--foreground)', fontSize: 12 }} domain={['auto','auto']} />
                 <Tooltip
                   formatter={fmtTip}
-                  labelFormatter={(y) => `Year: ${y}`}
+                  labelFormatter={(year) => `Year: ${year}`}
                   contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                   labelStyle={{ color: 'var(--foreground)' }}
                   itemStyle={{ color: 'var(--foreground)' }}
@@ -128,10 +115,10 @@ export default function PatternReturnsChart() {
                 />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
 
-                {/* spike inferiore */}
+                {/* spike inferiore (da 0 a maxDrop) */}
                 <Bar dataKey="dropExt" name="Max Drop" stackId="a" barSize={20} fill="#fecaca" />
 
-                {/* corpo principale */}
+                {/* corpo (da 0 a profit) */}
                 <Bar dataKey="profit" name="Profit" stackId="a" barSize={20}>
                   {data.map((d, i) => (
                     <Cell
@@ -142,7 +129,7 @@ export default function PatternReturnsChart() {
                   ))}
                 </Bar>
 
-                {/* spike superiore */}
+                {/* spike superiore (da profit a maxRise) */}
                 <Bar dataKey="riseExt" name="Max Rise" stackId="a" barSize={20} fill="#bbf7d0" />
               </BarChart>
             </ResponsiveContainer>
