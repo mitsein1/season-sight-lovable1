@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSeasonax } from "@/context/SeasonaxContext";
@@ -23,7 +24,9 @@ export default function AssetInfoCard() {
 
   const allAssets = React.useMemo(() => {
     if (!marketGroups) return [];
-    return Object.values(marketGroups).flat();
+    // Flatten and ensure unique assets to avoid key warnings
+    const flattened = Object.values(marketGroups).flat();
+    return Array.from(new Set(flattened)); // Remove duplicates
   }, [marketGroups]);
 
   return (
