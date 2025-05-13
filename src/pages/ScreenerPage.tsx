@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from "react";
 import { parse, format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -205,4 +206,80 @@ export default function ScreenerPage() {
                 ))}
               </SelectContent>
             </Select>
-          </div>\``}]}
+          </div>
+          {/* Direction */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Direction:</label>
+            <div className="flex items-center h-10 space-x-4 bg-gray-100 dark:bg-slate-700 rounded px-3">
+              <label className="flex items-center space-x-2">
+                <input type="radio" checked readOnly className="text-blue-600" />
+                <span>Long</span>
+              </label>
+              <label className="flex items-center space-x-2 opacity-50">
+                <input type="radio" disabled className="text-blue-600" />
+                <span>Short</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        {/* Results Table */}
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
+          {isLoading ? (
+            <div className="p-4">
+              <Skeleton className="h-8 w-full mb-4" />
+              <Skeleton className="h-8 w-full mb-4" />
+              <Skeleton className="h-8 w-full mb-4" />
+              <Skeleton className="h-8 w-full mb-4" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          ) : data && data.length > 0 ? (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead onClick={() => handleSort("rank")} className="cursor-pointer">
+                    Rank{renderSortIndicator("rank")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("symbol")} className="cursor-pointer">
+                    Symbol{renderSortIndicator("symbol")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("pattern_start")} className="cursor-pointer">
+                    Start{renderSortIndicator("pattern_start")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("pattern_end")} className="cursor-pointer">
+                    End{renderSortIndicator("pattern_end")}
+                  </TableHead>
+                  <TableHead>Win %</TableHead>
+                  <TableHead>Avg. Profit</TableHead>
+                  <TableHead>Avg. Loss</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {sortedData.map((pattern) => (
+                  <TableRow 
+                    key={`${pattern.rank}-${pattern.symbol}`} 
+                    className="hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer" 
+                    onClick={() => handleRowClick(pattern)}
+                  >
+                    <TableCell>{pattern.rank}</TableCell>
+                    <TableCell className="font-medium">{pattern.symbol}</TableCell>
+                    <TableCell>{pattern.pattern_start}</TableCell>
+                    <TableCell>{pattern.pattern_end}</TableCell>
+                    <TableCell>{pattern.win_percentage?.toFixed(1)}%</TableCell>
+                    <TableCell className="text-green-600">+{pattern.profit?.toFixed(2)}%</TableCell>
+                    <TableCell className="text-red-600">-{pattern.loss?.toFixed(2)}%</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          ) : (
+            <div className="p-8 text-center">
+              <p className="text-gray-500 dark:text-gray-400">No patterns found matching your criteria.</p>
+              <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">Try adjusting your filters.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
