@@ -1,5 +1,46 @@
 import { toast } from "sonner";
 
+
+// Tipi raw che arrivano dal backend
+export interface ScreenerRaw {
+  Symbol:             string;
+  Instrument:         string | null;
+  "Annualized return": number;
+  "Average return":    number;
+  "Median return":     number;
+  "Pattern Start":     string;
+  "Pattern End":       string;
+  "Cal. Days":         number;
+  "Max Profit":        number;
+  "Max Loss":          number;
+  "No. of Winners":    number;
+  "No. of Trades":     number;
+  "Win Ratio":         string;   // es. "67%"
+  "Std Dev":           number;
+  "Sharpe Ratio":      number;
+}
+
+// Forma che userà ScreenerPage
+export interface ScreenerPattern {
+  rank:               number;
+  symbol:             string;
+  instrument:         string;
+  annualized_return:  number;
+  average_return:     number;
+  median_return:      number;
+  pattern_start:      string;
+  pattern_end:        string;
+  calendar_days:      number;
+  max_profit:         number;
+  max_loss:           number;
+  num_winners:        number;
+  num_trades:         number;
+  win_ratio:          number;
+  std_dev:            number;
+  sharpe_ratio:       number;
+}
+
+
 // Base URL for the API
 const API_BASE_URL = "https://price-pattern-backend.onrender.com";
 
