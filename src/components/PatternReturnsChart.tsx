@@ -56,8 +56,9 @@ export default function PatternReturnsChart() {
     const profit    = item.profit_percentage ?? 0;
     const maxRise   = item.max_rise         ?? profit;
     const maxDrop   = item.max_drop         ?? profit;
-    const riseExt   = profit > 0 ? Math.max(maxRise - profit, 0) : 0;
-    const dropExt   = profit < 0 ? Math.min(maxDrop - profit, 0) : 0;
+    // Calcola estensioni: differenza tra raw e profit
+    const riseExt   = profit >= 0 ? Math.max(maxRise - profit, 0) : 0;
+    const dropExt   = profit <= 0 ? Math.min(maxDrop - profit, 0) : 0;
     return {
       year:    item.year,
       profit,
@@ -68,23 +69,22 @@ export default function PatternReturnsChart() {
     };
   });
 
-  // Formatter per tooltip: mostra raw maxRise/maxDrop per le estensioni
+  // Formatter per tooltip: mostra raw maxRise/maxDrop e profit
   const fmtAxis = (value: number) => `${value.toFixed(0)}%`;
   const fmtTip = (
     value: number,
     name: string,
     props: TooltipProps<number, string>
   ) => {
+    const payload = (props.payload || {}) as any;
     if (name === "Max Rise") {
-      const v = props.payload?.maxRise;
-      return v !== undefined ? [`${v.toFixed(2)}%`, name] : [`${value.toFixed(2)}%`, name];
+      return [`${payload.maxRise.toFixed(2)}%`, name];
     }
     if (name === "Max Drop") {
-      const v = props.payload?.maxDrop;
-      return v !== undefined ? [`${v.toFixed(2)}%`, name] : [`${value.toFixed(2)}%`, name];
+      return [`${payload.maxDrop.toFixed(2)}%`, name];
     }
     // Profit
-    return [`${(props.payload?.profit ?? value).toFixed(2)}%`, name];
+    return [`${payload.profit.toFixed(2)}%`, name];
   };
 
   return (
@@ -139,7 +139,8 @@ export default function PatternReturnsChart() {
                 />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
 
-                {/* Stack: profit, dropExt, riseExt */}
+                {/* Sempre plotta le tre serie impilate */}
+                <Bar dataKey="dropExt" name="Max Drop" stackId="a" barSize={20} fill="#fecaca" />
                 <Bar dataKey="profit" name="Profit" stackId="a" barSize={20}>
                   {data.map((entry, idx) => (
                     <Cell
@@ -149,12 +150,7 @@ export default function PatternReturnsChart() {
                     />
                   ))}
                 </Bar>
-                {data.some(d => d.dropExt !== 0) && (
-                  <Bar dataKey="dropExt" name="Max Drop" stackId="a" barSize={20} fill="#fecaca" />
-                )}
-                {data.some(d => d.riseExt !== 0) && (
-                  <Bar dataKey="riseExt" name="Max Rise" stackId="a" barSize={20} fill="#bbf7d0" />
-                )}
+                <Bar dataKey="riseExt" name="Max Rise" stackId="a" barSize={20} fill="#bbf7d0" />
               </BarChart>
             </ResponsiveContainer>
           </div>
