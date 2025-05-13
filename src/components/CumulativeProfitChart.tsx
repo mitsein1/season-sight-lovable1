@@ -28,15 +28,28 @@ export default function CumulativeProfitChart() {
   const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
+    // Reset state on new asset or date range
+    setLoading(true);
+    setData(null);
+    setRetryCount(0);
+    
     const loadData = async () => {
-      if (retryCount > 0) {
-        console.log(`Retrying cumulative profit data fetch (attempt ${retryCount + 1})`);
-      }
-      
-      setLoading(true);
       try {
         console.log(`Fetching cumulative profit for ${asset} from ${startDay} to ${endDay}, yearsBack: ${yearsBack}`);
         const result = await fetchCumulativeProfit(asset, startDay, endDay);
+        
+        if (!result || result.length === 0) {
+          console.log("No cumulative profit data returned");
+          if (retryCount < 2) {
+            setRetryCount(prev => prev + 1);
+            return;
+          } else {
+            setData(null);
+            setLoading(false);
+            return;
+          }
+        }
+        
         setData(result);
 
         // 1) Sort by year
@@ -54,21 +67,16 @@ export default function CumulativeProfitChart() {
         const filtered = cumulPoints.filter(pt => pt.year >= currentYear - yearsBack + 1);
 
         setChartData(filtered);
-        setRetryCount(0); // Reset retry count on success
+        setRetryCount(0);
+        setLoading(false);
       } catch (error) {
         console.error("Failed to fetch cumulative profit:", error);
         
-        // Only show toast on final retry
-        if (retryCount >= 2) {
+        if (retryCount < 2) {
+          setRetryCount(prev => prev + 1);
+        } else {
           toast.error("Failed to load cumulative profit data");
           setData(null);
-        } else {
-          // Auto retry
-          setRetryCount(prev => prev + 1);
-          return; // Exit early to prevent setLoading(false)
-        }
-      } finally {
-        if (retryCount >= 2 || data) {
           setLoading(false);
         }
       }
@@ -76,13 +84,9 @@ export default function CumulativeProfitChart() {
 
     loadData();
     
-    // Add a retry mechanism with setTimeout if we're still retrying
-    let retryTimeout: NodeJS.Timeout | null = null;
-    if (retryCount < 3 && !data) {
-      retryTimeout = setTimeout(() => {
-        loadData();
-      }, 1000); // 1 second retry delay
-    }
+    // Add a retry mechanism with setTimeout only if we're retrying
+    const retryTimeout = retryCount > 0 && retryCount < 3 ? 
+      setTimeout(() => loadData(), 1000) : null;
     
     return () => {
       if (retryTimeout) clearTimeout(retryTimeout);
