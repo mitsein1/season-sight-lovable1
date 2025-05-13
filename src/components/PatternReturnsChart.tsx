@@ -17,14 +17,14 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 
-// Tipo dati per il chart: profit, riseExt, dropExt, maxRise e maxDrop per anno
+// Interfaccia interna per i dati
 interface PatternReturnsData {
-  year:     number;
-  profit:   number;
-  riseExt:  number;
-  dropExt:  number;
-  maxRise:  number;
-  maxDrop:  number;
+  year:    number;
+  profit:  number;
+  maxRise: number;
+  maxDrop: number;
+  riseExt: number;
+  dropExt: number;
 }
 
 export default function PatternReturnsChart() {
@@ -51,40 +51,30 @@ export default function PatternReturnsChart() {
     load();
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
-  // Mappa i dati per Recharts con estensioni e valori grezzi
+  // Mappatura dei dati inclusi gli spike
   const data: PatternReturnsData[] = stats.map(item => {
     const profit    = item.profit_percentage ?? 0;
     const maxRise   = item.max_rise         ?? profit;
     const maxDrop   = item.max_drop         ?? profit;
-    // Calcola estensioni: differenza tra raw e profit
-    const riseExt   = profit >= 0 ? Math.max(maxRise - profit, 0) : 0;
-    const dropExt   = profit <= 0 ? Math.min(maxDrop - profit, 0) : 0;
-    return {
-      year:    item.year,
-      profit,
-      riseExt,
-      dropExt,
-      maxRise,
-      maxDrop,
-    };
+    const riseExt   = Math.max(maxRise - profit, 0);
+    const dropExt   = Math.min(maxDrop - profit, 0);
+    return { year: item.year, profit, maxRise, maxDrop, riseExt, dropExt };
   });
 
-  // Formatter per tooltip: mostra raw maxRise/maxDrop e profit
-  const fmtAxis = (value: number) => `${value.toFixed(0)}%`;
+  const fmtAxis = (v: number) => `${v.toFixed(0)}%`;
   const fmtTip = (
     value: number,
     name: string,
     props: TooltipProps<number, string>
   ) => {
-    const payload = (props.payload || {}) as any;
-    if (name === "Max Rise") {
-      return [`${payload.maxRise.toFixed(2)}%`, name];
+    const { payload } = props;
+    if (name === 'Max Rise') {
+      return [`${(payload?.maxRise ?? value).toFixed(2)}%`, name];
     }
-    if (name === "Max Drop") {
-      return [`${payload.maxDrop.toFixed(2)}%`, name];
+    if (name === 'Max Drop') {
+      return [`${(payload?.maxDrop ?? value).toFixed(2)}%`, name];
     }
-    // Profit
-    return [`${payload.profit.toFixed(2)}%`, name];
+    return [`${(payload?.profit ?? value).toFixed(2)}%`, name];
   };
 
   return (
@@ -96,12 +86,12 @@ export default function PatternReturnsChart() {
       </CardHeader>
       <CardContent className="px-4 pb-4">
         {loading && (
-          <div className="h-64 flex justify-center items-center text-slate-500 dark:text-slate-400">
+          <div className="h-64 flex items-center justify-center text-slate-500 dark:text-slate-400">
             Loading…
           </div>
         )}
         {!loading && data.length === 0 && (
-          <div className="h-64 flex justify-center items-center text-slate-500 dark:text-slate-400">
+          <div className="h-64 flex items-center justify-center text-slate-500 dark:text-slate-400">
             No data
           </div>
         )}
@@ -111,22 +101,11 @@ export default function PatternReturnsChart() {
               <BarChart data={data} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} vertical={false} />
                 <XAxis dataKey="year" tick={{ fontSize: 12, fill: 'var(--foreground)' }} />
-                <YAxis
-                  tickFormatter={fmtAxis}
-                  width={60}
-                  tick={{ fontSize: 12, fill: 'var(--foreground)' }}
-                  domain={['auto', 'auto']}
-                />
+                <YAxis tickFormatter={fmtAxis} width={60} tick={{ fontSize: 12, fill: 'var(--foreground)' }} domain={['auto', 'auto']} />
                 <Tooltip
                   formatter={fmtTip}
                   labelFormatter={year => `Year: ${year}`}
-                  contentStyle={{
-                    backgroundColor: 'var(--card)',
-                    color: 'var(--foreground)',
-                    border: '1px solid var(--border)',
-                  }}
-                  labelStyle={{ color: 'var(--foreground)' }}
-                  itemStyle={{ color: 'var(--foreground)' }}
+                  contentStyle={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
                 />
                 <Legend
                   verticalAlign="top"
@@ -139,17 +118,21 @@ export default function PatternReturnsChart() {
                 />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
 
-                {/* Sempre plotta le tre serie impilate */}
+                {/* Lower wick */}
                 <Bar dataKey="dropExt" name="Max Drop" stackId="a" barSize={20} fill="#fecaca" />
+
+                {/* Body */}
                 <Bar dataKey="profit" name="Profit" stackId="a" barSize={20}>
-                  {data.map((entry, idx) => (
+                  {data.map((d, i) => (
                     <Cell
-                      key={`profit-${idx}`}
-                      fill={entry.profit >= 0 ? '#2ec27e' : '#e01b24'}
-                      radius={entry.profit >= 0 ? [4, 4, 0, 0] : [0, 0, 4, 4]}
+                      key={`cell-profit-${i}`}
+                      fill={d.profit >= 0 ? '#2ec27e' : '#e01b24'}
+                      radius={d.profit >= 0 ? [4,4,0,0] : [0,0,4,4]}
                     />
                   ))}
                 </Bar>
+
+                {/* Upper wick */}
                 <Bar dataKey="riseExt" name="Max Rise" stackId="a" barSize={20} fill="#bbf7d0" />
               </BarChart>
             </ResponsiveContainer>
