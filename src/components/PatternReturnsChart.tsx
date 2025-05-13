@@ -50,11 +50,14 @@ export default function PatternReturnsChart() {
 
   // Mappa i dati per Recharts con estensioni rialzo/ ribasso
   const data: PatternReturnsData[] = stats.map(item => {
-    const profit = item.profit_percentage ?? 0;
+    const profit  = item.profit_percentage ?? 0;
     const maxRise = item.max_rise ?? profit;
     const maxDrop = item.max_drop ?? profit;
+
+    // Calcola estensioni
     const riseExt = profit > 0 ? Math.max(maxRise - profit, 0) : 0;
     const dropExt = profit < 0 ? Math.min(maxDrop - profit, 0) : 0;
+
     return {
       year:    item.year,
       profit,
@@ -81,7 +84,7 @@ export default function PatternReturnsChart() {
           </div>
         )}
 
-        {!loading && !data.length && (
+        {!loading && data.length === 0 && (
           <div className="h-64 flex justify-center items-center text-slate-500 dark:text-slate-400">
             No data
           </div>
@@ -90,15 +93,9 @@ export default function PatternReturnsChart() {
         {!loading && data.length > 0 && (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={data}
-                margin={{ top: 5, right: 20, left: 20, bottom: 5 }}
-              >
+              <BarChart data={data} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} vertical={false} />
-                <XAxis
-                  dataKey="year"
-                  tick={{ fontSize: 12, fill: 'var(--foreground)' }}
-                />
+                <XAxis dataKey="year" tick={{ fontSize: 12, fill: 'var(--foreground)' }} />
                 <YAxis
                   tickFormatter={fmtAxis}
                   width={60}
@@ -128,7 +125,9 @@ export default function PatternReturnsChart() {
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
 
                 {/* Stack: dropExt, profit, riseExt */}
-                <Bar dataKey="dropExt" name="Max Drop" stackId="a" barSize={20} fill="#fecaca" />
+                {data.some(d => d.dropExt !== 0) && (
+                  <Bar dataKey="dropExt" name="Max Drop" stackId="a" barSize={20} fill="#fecaca" />
+                )}
                 <Bar dataKey="profit" name="Profit" stackId="a" barSize={20}>
                   {data.map((entry, idx) => (
                     <Cell
@@ -138,7 +137,9 @@ export default function PatternReturnsChart() {
                     />
                   ))}
                 </Bar>
-                <Bar dataKey="riseExt" name="Max Rise" stackId="a" barSize={20} fill="#bbf7d0" />
+                {data.some(d => d.riseExt !== 0) && (
+                  <Bar dataKey="riseExt" name="Max Rise" stackId="a" barSize={20} fill="#bbf7d0" />
+                )}
               </BarChart>
             </ResponsiveContainer>
           </div>
