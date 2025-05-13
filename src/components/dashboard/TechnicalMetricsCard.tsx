@@ -37,44 +37,44 @@ export default function TechnicalMetricsCard() {
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
   return (
-    <Card className="bg-white shadow-sm h-full">
+    <Card className="bg-white dark:bg-slate-800 shadow-sm h-full">
       <CardHeader className="pb-2 pt-4 px-6">
-        <CardTitle className="text-lg font-semibold text-slate-800">Miscellaneous</CardTitle>
+        <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-100">Miscellaneous</CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
         {loading ? (
-          <div className="flex justify-center py-8">Loading...</div>
+          <div className="flex justify-center py-8 text-slate-500 dark:text-slate-400">Loading...</div>
         ) : !data ? (
-          <div className="flex justify-center py-8 text-slate-500">No data available</div>
+          <div className="flex justify-center py-8 text-slate-500 dark:text-slate-400">No data available</div>
         ) : (
           <div className="grid grid-cols-2 gap-y-6">
             <div>
-              <div className="text-lg font-bold">{data.trades}</div>
-              <div className="text-xs text-slate-500">Trades</div>
+              <div className="text-lg font-bold text-slate-800 dark:text-slate-100">{data.trades}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Trades</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{data.current_streak}</div>
-              <div className="text-xs text-slate-500">Current streak</div>
+              <div className="text-lg font-bold text-slate-800 dark:text-slate-100">{data.current_streak}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Current streak</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{data.calendar_days}</div>
-              <div className="text-xs text-slate-500">Calendar days</div>
+              <div className="text-lg font-bold text-slate-800 dark:text-slate-100">{data.calendar_days}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Calendar days</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{safeToFixed(data.volatility)}</div>
-              <div className="text-xs text-slate-500">Volatility</div>
+              <div className="text-lg font-bold text-slate-800 dark:text-slate-100">{safeToFixed(data.volatility)}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Volatility</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{safeToFixed(data.sharpe_ratio)}</div>
-              <div className="text-xs text-slate-500">Sharpe ratio</div>
+              <div className="text-lg font-bold text-slate-800 dark:text-slate-100">{safeToFixed(data.sharpe_ratio)}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Sharpe ratio</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{safeToFixed(data.sortino_ratio)}</div>
-              <div className="text-xs text-slate-500">Sortino ratio</div>
+              <div className="text-lg font-bold text-slate-800 dark:text-slate-100">{safeToFixed(data.sortino_ratio)}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Sortino ratio</div>
             </div>
             <div>
-              <div className="text-lg font-bold">{safeToFixed(data.std_dev)}</div>
-              <div className="text-xs text-slate-500">Standard deviation</div>
+              <div className="text-lg font-bold text-slate-800 dark:text-slate-100">{safeToFixed(data.std_dev)}</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400">Standard deviation</div>
             </div>
           </div>
         )}

@@ -39,21 +39,31 @@ export default function PatternReturnsChart() {
   const fmtTip = (v: number) => [`${v.toFixed(2)}%`, "Return"];
 
   return (
-    <Card className="bg-white shadow-sm h-full">
+    <Card className="bg-white dark:bg-slate-800 shadow-sm h-full">
       <CardHeader className="pb-2 pt-4 px-6">
-        <CardTitle className="text-lg font-semibold text-slate-800">Pattern Returns ({startDay}–{endDay})</CardTitle>
+        <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-100">Pattern Returns ({startDay}–{endDay})</CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-4">
-        {loading && <div className="h-64 flex justify-center items-center">Loading…</div>}
-        {!loading && chartData.length === 0 && <div className="h-64 flex justify-center items-center text-slate-500">No data</div>}
+        {loading && <div className="h-64 flex justify-center items-center text-slate-500 dark:text-slate-400">Loading…</div>}
+        {!loading && chartData.length === 0 && <div className="h-64 flex justify-center items-center text-slate-500 dark:text-slate-400">No data</div>}
         {!loading && chartData.length > 0 && (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData} margin={{ top: 5, right: 20, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} vertical={false} />
-                <XAxis dataKey="year" tick={{ fontSize: 12 }} />
-                <YAxis tickFormatter={fmtAxis} width={60} tick={{ fontSize: 12 }} domain={['auto', 'auto']} />
-                <Tooltip formatter={fmtTip} labelFormatter={y => `Year: ${y}`} />
+                <XAxis dataKey="year" tick={{ fontSize: 12, fill: 'var(--foreground)' }} />
+                <YAxis tickFormatter={fmtAxis} width={60} tick={{ fontSize: 12, fill: 'var(--foreground)' }} domain={['auto', 'auto']} />
+                <Tooltip 
+                  formatter={fmtTip} 
+                  labelFormatter={y => `Year: ${y}`}
+                  contentStyle={{ 
+                    backgroundColor: 'var(--card)', 
+                    color: 'var(--foreground)',
+                    border: '1px solid var(--border)'
+                  }}
+                  labelStyle={{ color: 'var(--foreground)' }}
+                  itemStyle={{ color: 'var(--foreground)' }}
+                />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
                 <Bar dataKey="return" radius={[4, 4, 0, 0]}>
                   {chartData.map((e, i) =>

@@ -22,7 +22,7 @@ export default function MainNavigation() {
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-seasonax-primary dark:text-seasonax-secondary">
-              Seasonax
+              Market Dynamics
             </h1>
             <ThemeToggle />
           </div>

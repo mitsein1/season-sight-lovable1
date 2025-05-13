@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 type SortOrder = "asc" | "desc";
 
@@ -29,6 +30,8 @@ interface SortState {
 }
 
 const ScreenerPage = () => {
+  const navigate = useNavigate();
+  
   // Filter state
   const [marketGroup, setMarketGroup] = useState("NASDAQ 100");
   const [startDateOffset, setStartDateOffset] = useState("today");
@@ -52,6 +55,18 @@ const ScreenerPage = () => {
       column,
       order: prev.column === column && prev.order === "asc" ? "desc" : "asc",
     }));
+  };
+
+  // Navigate to dashboard with pattern data
+  const handleRowClick = (pattern: ScreenerPattern) => {
+    navigate('/', { 
+      state: { 
+        asset: pattern.symbol,
+        startDay: pattern.pattern_start,
+        endDay: pattern.pattern_end,
+        yearsBack: typeof yearsBack === 'number' ? yearsBack : 15
+      } 
+    });
   };
 
   // Sort data
@@ -371,7 +386,11 @@ const ScreenerPage = () => {
               </TableHeader>
               <TableBody>
                 {sortedData.map((pattern) => (
-                  <TableRow key={`${pattern.rank}-${pattern.symbol}`}>
+                  <TableRow 
+                    key={`${pattern.rank}-${pattern.symbol}`}
+                    className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/50"
+                    onClick={() => handleRowClick(pattern)}
+                  >
                     <TableCell>{pattern.rank}</TableCell>
                     <TableCell className="font-medium">{pattern.symbol}</TableCell>
                     <TableCell>{pattern.instrument}</TableCell>

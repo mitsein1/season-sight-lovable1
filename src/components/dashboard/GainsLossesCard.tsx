@@ -36,42 +36,42 @@ export default function GainsLossesCard() {
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
   return (
-    <Card className="bg-white shadow-sm h-full">
+    <Card className="bg-white dark:bg-slate-800 shadow-sm h-full">
       <CardHeader className="pb-2 pt-4 px-6">
-        <CardTitle className="text-lg font-semibold text-slate-800">Gains / Losses</CardTitle>
+        <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-100">Gains / Losses</CardTitle>
       </CardHeader>
       <CardContent className="px-6 pb-6">
         {loading ? (
-          <div className="flex justify-center py-8">Loading...</div>
+          <div className="flex justify-center py-8 text-slate-500 dark:text-slate-400">Loading...</div>
         ) : !data ? (
-          <div className="flex justify-center py-8 text-slate-500">No data available</div>
+          <div className="flex justify-center py-8 text-slate-500 dark:text-slate-400">No data available</div>
         ) : (
           <div className="grid grid-cols-2 gap-6">
             <div>
-              <h3 className="text-lg font-medium text-slate-800">Gains</h3>
+              <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100">Gains</h3>
               <div className="text-3xl font-bold text-seasonax-positive mt-2">{data.gains}</div>
-              <div className="text-sm text-slate-500">Gains</div>
+              <div className="text-sm text-slate-500 dark:text-slate-400">Gains</div>
               <div className="mt-4">
                 <div className="text-base font-semibold text-seasonax-positive">+{data.gain_pct.toFixed(2)}%</div>
-                <div className="text-xs text-slate-500">Average Gain</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">Average Gain</div>
               </div>
               <div className="mt-2">
                 <div className="text-base font-semibold text-seasonax-positive">+{data.max_gain.toFixed(2)}%</div>
-                <div className="text-xs text-slate-500">Max Gain</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">Max Gain</div>
               </div>
             </div>
             
             <div>
-              <h3 className="text-lg font-medium text-slate-800">Losses</h3>
+              <h3 className="text-lg font-medium text-slate-800 dark:text-slate-100">Losses</h3>
               <div className="text-3xl font-bold text-seasonax-negative mt-2">{data.losses}</div>
-              <div className="text-sm text-slate-500">Losses</div>
+              <div className="text-sm text-slate-500 dark:text-slate-400">Losses</div>
               <div className="mt-4">
                 <div className="text-base font-semibold text-seasonax-negative">{data.loss_pct.toFixed(2)}%</div>
-                <div className="text-xs text-slate-500">Average Loss</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">Average Loss</div>
               </div>
               <div className="mt-2">
                 <div className="text-base font-semibold text-seasonax-negative">{data.max_loss.toFixed(2)}%</div>
-                <div className="text-xs text-slate-500">Max Loss</div>
+                <div className="text-xs text-slate-500 dark:text-slate-400">Max Loss</div>
               </div>
             </div>
           </div>

@@ -64,16 +64,16 @@ export default function CumulativeProfitChart() {
   const formatTooltip = (value: number) => [`${value.toFixed(2)}%`, "Cumulative"];
 
   return (
-    <Card className="bg-white shadow-sm h-full">
+    <Card className="bg-white dark:bg-slate-800 shadow-sm h-full">
       <CardHeader className="pb-2 pt-4 px-6">
-        <CardTitle className="text-lg font-semibold text-slate-800">
+        <CardTitle className="text-lg font-semibold text-slate-800 dark:text-slate-100">
           Cumulative Profit ({startDay} – {endDay})
         </CardTitle>
       </CardHeader>
       <CardContent className="px-4 pb-4">
-        {loading && <div className="flex justify-center items-center h-64">Loading...</div>}
+        {loading && <div className="flex justify-center items-center h-64 text-slate-500 dark:text-slate-400">Loading...</div>}
         {!loading && (!data || data.length === 0) && (
-          <div className="flex justify-center items-center h-64 text-slate-500">No data available</div>
+          <div className="flex justify-center items-center h-64 text-slate-500 dark:text-slate-400">No data available</div>
         )}
         {!loading && data?.length > 0 && (
           <div className="h-64">
@@ -85,19 +85,26 @@ export default function CumulativeProfitChart() {
                 <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
                 <XAxis
                   dataKey="year"
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 12, fill: 'var(--foreground)' }}
                   padding={{ left: 10, right: 10 }}
                 />
                 <YAxis
                   dataKey="cumulative"
                   tickFormatter={formatYAxis}
                   width={60}
-                  tick={{ fontSize: 12 }}
+                  tick={{ fontSize: 12, fill: 'var(--foreground)' }}
                   domain={["auto", "auto"]}
                 />
                 <Tooltip
                   formatter={formatTooltip}
                   labelFormatter={(year) => `Year: ${year}`}
+                  contentStyle={{ 
+                    backgroundColor: 'var(--card)', 
+                    color: 'var(--foreground)',
+                    border: '1px solid var(--border)'
+                  }}
+                  labelStyle={{ color: 'var(--foreground)' }}
+                  itemStyle={{ color: 'var(--foreground)' }}
                 />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
                 <Line
