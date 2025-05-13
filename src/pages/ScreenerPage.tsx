@@ -265,9 +265,9 @@ export default function ScreenerPage() {
                     <TableCell className="font-medium">{pattern.symbol}</TableCell>
                     <TableCell>{pattern.pattern_start}</TableCell>
                     <TableCell>{pattern.pattern_end}</TableCell>
-                    <TableCell>{pattern.win_percentage?.toFixed(1)}%</TableCell>
-                    <TableCell className="text-green-600">+{pattern.profit?.toFixed(2)}%</TableCell>
-                    <TableCell className="text-red-600">-{pattern.loss?.toFixed(2)}%</TableCell>
+                    <TableCell>{pattern.win_ratio?.toFixed(1)}%</TableCell>
+                    <TableCell className="text-green-600">+{pattern.average_return?.toFixed(2)}%</TableCell>
+                    <TableCell className="text-red-600">-{Math.abs(pattern.max_loss)?.toFixed(2)}%</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
