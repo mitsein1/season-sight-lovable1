@@ -20,6 +20,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -130,8 +131,14 @@ export default function ScreenerPage() {
   ];
   const winPctOptions = Array.from({ length: 21 }, (_, i) => ({ value: i * 5, label: `${i * 5}%` }));
 
-  const renderSortIndicator = (col: keyof ScreenerPattern) =>
-    sortState.column === col ? (sortState.order === "asc" ? " ↑" : " ↓") : null;
+  const renderSortIcon = (column: keyof ScreenerPattern) => {
+    if (sortState.column !== column) return null;
+    return sortState.order === "asc" ? (
+      <ArrowUp className="inline ml-1 h-4 w-4" />
+    ) : (
+      <ArrowDown className="inline ml-1 h-4 w-4" />
+    );
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
@@ -230,7 +237,7 @@ export default function ScreenerPage() {
         </div>
 
         {/* Results Table */}
-        <div className="bg-white dark:bg-slate-800 rounded-lg shadow overflow-hidden">
+        <div className="bg-white dark:bg-slate-800 rounded-lg shadow overflow-auto">
           {isLoading ? (
             <div className="p-4">
               <Skeleton className="h-8 w-full mb-4" />
@@ -243,21 +250,54 @@ export default function ScreenerPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead onClick={() => handleSort("rank")} className="cursor-pointer">
-                    Rank{renderSortIndicator("rank")}
+                  <TableHead onClick={() => handleSort("rank")} className="cursor-pointer whitespace-nowrap sticky left-0 bg-white dark:bg-slate-800">
+                    Rank {renderSortIcon("rank")}
                   </TableHead>
-                  <TableHead onClick={() => handleSort("symbol")} className="cursor-pointer">
-                    Symbol{renderSortIndicator("symbol")}
+                  <TableHead onClick={() => handleSort("symbol")} className="cursor-pointer whitespace-nowrap">
+                    Symbol {renderSortIcon("symbol")}
                   </TableHead>
-                  <TableHead onClick={() => handleSort("pattern_start")} className="cursor-pointer">
-                    Start{renderSortIndicator("pattern_start")}
+                  <TableHead onClick={() => handleSort("instrument")} className="cursor-pointer whitespace-nowrap">
+                    Instrument {renderSortIcon("instrument")}
                   </TableHead>
-                  <TableHead onClick={() => handleSort("pattern_end")} className="cursor-pointer">
-                    End{renderSortIndicator("pattern_end")}
+                  <TableHead onClick={() => handleSort("annualized_return")} className="cursor-pointer whitespace-nowrap">
+                    Annualized Return {renderSortIcon("annualized_return")}
                   </TableHead>
-                  <TableHead>Win %</TableHead>
-                  <TableHead>Avg. Profit</TableHead>
-                  <TableHead>Avg. Loss</TableHead>
+                  <TableHead onClick={() => handleSort("average_return")} className="cursor-pointer whitespace-nowrap">
+                    Average Return {renderSortIcon("average_return")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("median_return")} className="cursor-pointer whitespace-nowrap">
+                    Median Return {renderSortIcon("median_return")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("pattern_start")} className="cursor-pointer whitespace-nowrap">
+                    Pattern Start {renderSortIcon("pattern_start")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("pattern_end")} className="cursor-pointer whitespace-nowrap">
+                    Pattern End {renderSortIcon("pattern_end")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("calendar_days")} className="cursor-pointer whitespace-nowrap">
+                    Cal. Days {renderSortIcon("calendar_days")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("max_profit")} className="cursor-pointer whitespace-nowrap">
+                    Max Profit {renderSortIcon("max_profit")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("max_loss")} className="cursor-pointer whitespace-nowrap">
+                    Max Loss {renderSortIcon("max_loss")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("num_winners")} className="cursor-pointer whitespace-nowrap">
+                    No. of Winners {renderSortIcon("num_winners")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("num_trades")} className="cursor-pointer whitespace-nowrap">
+                    No. of Trades {renderSortIcon("num_trades")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("win_ratio")} className="cursor-pointer whitespace-nowrap">
+                    Win Ratio {renderSortIcon("win_ratio")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("std_dev")} className="cursor-pointer whitespace-nowrap">
+                    Std Dev {renderSortIcon("std_dev")}
+                  </TableHead>
+                  <TableHead onClick={() => handleSort("sharpe_ratio")} className="cursor-pointer whitespace-nowrap">
+                    Sharpe Ratio {renderSortIcon("sharpe_ratio")}
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -267,13 +307,28 @@ export default function ScreenerPage() {
                     className="hover:bg-slate-100 dark:hover:bg-slate-700 cursor-pointer" 
                     onClick={() => handleRowClick(pattern)}
                   >
-                    <TableCell>{pattern.rank}</TableCell>
+                    <TableCell className="sticky left-0 bg-white dark:bg-slate-800">{pattern.rank}</TableCell>
                     <TableCell className="font-medium">{pattern.symbol}</TableCell>
+                    <TableCell>{pattern.instrument}</TableCell>
+                    <TableCell className={pattern.annualized_return >= 0 ? "text-green-600" : "text-red-600"}>
+                      {pattern.annualized_return >= 0 ? "+" : ""}{safeToFixed(pattern.annualized_return, 2)}%
+                    </TableCell>
+                    <TableCell className={pattern.average_return >= 0 ? "text-green-600" : "text-red-600"}>
+                      {pattern.average_return >= 0 ? "+" : ""}{safeToFixed(pattern.average_return, 2)}%
+                    </TableCell>
+                    <TableCell className={pattern.median_return >= 0 ? "text-green-600" : "text-red-600"}>
+                      {pattern.median_return >= 0 ? "+" : ""}{safeToFixed(pattern.median_return, 2)}%
+                    </TableCell>
                     <TableCell>{pattern.pattern_start}</TableCell>
                     <TableCell>{pattern.pattern_end}</TableCell>
-                    <TableCell>{safeToFixed(pattern.win_ratio, 1)}%</TableCell>
-                    <TableCell className="text-green-600">+{safeToFixed(pattern.average_return, 2)}%</TableCell>
+                    <TableCell>{pattern.calendar_days}</TableCell>
+                    <TableCell className="text-green-600">+{safeToFixed(pattern.max_profit, 2)}%</TableCell>
                     <TableCell className="text-red-600">-{safeToFixed(Math.abs(pattern.max_loss), 2)}%</TableCell>
+                    <TableCell>{pattern.num_winners}</TableCell>
+                    <TableCell>{pattern.num_trades}</TableCell>
+                    <TableCell>{safeToFixed(pattern.win_ratio, 1)}%</TableCell>
+                    <TableCell>{safeToFixed(pattern.std_dev, 2)}%</TableCell>
+                    <TableCell>{safeToFixed(pattern.sharpe_ratio, 2)}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
