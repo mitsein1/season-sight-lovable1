@@ -16,12 +16,12 @@ import {
 } from "recharts";
 import { toast } from "sonner";
 
-// Tipo dati per il chart: Profit, Max Rise e Max Drop per anno
+// Tipo dati per il chart: profit, riseExt e dropExt per anno
 interface PatternReturnsData {
-  year:    number;
-  profit:  number;
-  maxRise: number;
-  maxDrop: number;
+  year:     number;
+  profit:   number;
+  riseExt:  number;
+  dropExt:  number;
 }
 
 export default function PatternReturnsChart() {
@@ -48,13 +48,20 @@ export default function PatternReturnsChart() {
     load();
   }, [asset, startDay, endDay, yearsBack, refreshCounter]);
 
-  // Mappa i dati per Recharts
-  const data: PatternReturnsData[] = stats.map(item => ({
-    year:    item.year,
-    profit:  item.profit_percentage ?? 0,
-    maxRise: item.max_rise ?? 0,
-    maxDrop: item.max_drop ?? 0,
-  }));
+  // Mappa i dati per Recharts con estensioni rialzo/ ribasso
+  const data: PatternReturnsData[] = stats.map(item => {
+    const profit = item.profit_percentage ?? 0;
+    const maxRise = item.max_rise ?? profit;
+    const maxDrop = item.max_drop ?? profit;
+    const riseExt = profit > 0 ? Math.max(maxRise - profit, 0) : 0;
+    const dropExt = profit < 0 ? Math.min(maxDrop - profit, 0) : 0;
+    return {
+      year:    item.year,
+      profit,
+      riseExt,
+      dropExt,
+    };
+  });
 
   const fmtAxis = (value: number) => `${value.toFixed(0)}%`;
   const fmtTip = (value: number, name: string) => [`${value.toFixed(2)}%`, name];
@@ -74,7 +81,7 @@ export default function PatternReturnsChart() {
           </div>
         )}
 
-        {!loading && data.length === 0 && (
+        {!loading && !data.length && (
           <div className="h-64 flex justify-center items-center text-slate-500 dark:text-slate-400">
             No data
           </div>
@@ -109,46 +116,29 @@ export default function PatternReturnsChart() {
                   labelStyle={{ color: 'var(--foreground)' }}
                   itemStyle={{ color: 'var(--foreground)' }}
                 />
-                {/* Legenda personalizzata colorata */}
                 <Legend
                   verticalAlign="top"
                   height={24}
                   payload={[
+                    { value: 'Max Drop', id: 'dropExt', type: 'square', color: '#fecaca' },
                     { value: 'Profit', id: 'profit', type: 'square', color: '#2ec27e' },
-                    { value: 'Max Rise', id: 'maxRise', type: 'square', color: '#bbf7d0' },
-                    { value: 'Max Drop', id: 'maxDrop', type: 'square', color: '#fecaca' },
+                    { value: 'Max Rise', id: 'riseExt', type: 'square', color: '#bbf7d0' },
                   ]}
                 />
                 <ReferenceLine y={0} stroke="#666" strokeDasharray="3 3" />
 
-                {/* Barra del profit (verde se positivo, rosso se negativo) */}
-                <Bar dataKey="profit" name="Profit" barSize={20} fill="#2ec27e">
-                  {data.map((entry, index) => (
+                {/* Stack: dropExt, profit, riseExt */}
+                <Bar dataKey="dropExt" name="Max Drop" stackId="a" barSize={20} fill="#fecaca" />
+                <Bar dataKey="profit" name="Profit" stackId="a" barSize={20}>
+                  {data.map((entry, idx) => (
                     <Cell
-                      key={`profit-${index}`}
+                      key={`profit-${idx}`}
                       fill={entry.profit >= 0 ? '#2ec27e' : '#e01b24'}
                       radius={entry.profit >= 0 ? [4, 4, 0, 0] : [0, 0, 4, 4]}
                     />
                   ))}
                 </Bar>
-
-                {/* Barre impilate: Max Rise e Max Drop */}
-                <Bar
-                  dataKey="maxRise"
-                  name="Max Rise"
-                  stackId="a"
-                  barSize={20}
-                  fill="#bbf7d0"
-                  radius={[4, 4, 0, 0]}
-                />
-                <Bar
-                  dataKey="maxDrop"
-                  name="Max Drop"
-                  stackId="a"
-                  barSize={20}
-                  fill="#fecaca"
-                  radius={[0, 0, 4, 4]}
-                />
+                <Bar dataKey="riseExt" name="Max Rise" stackId="a" barSize={20} fill="#bbf7d0" />
               </BarChart>
             </ResponsiveContainer>
           </div>
