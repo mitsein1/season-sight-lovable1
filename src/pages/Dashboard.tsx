@@ -1,6 +1,6 @@
 
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import Navbar from "@/components/Navbar";
 import MainCharts from "@/components/dashboard/MainCharts";
@@ -19,41 +19,45 @@ interface LocationState {
 
 export default function Dashboard() {
   const location = useLocation();
-  const { setAsset, setDateRange, setYearsBack, refreshData } = useSeasonax();
+  const navigate = useNavigate();
+  const { asset, setAsset, startDay, endDay, setDateRange, yearsBack, setYearsBack, refreshData } = useSeasonax();
   
   // Apply navigation state if available
   useEffect(() => {
     const state = location.state as LocationState | null;
     
     if (state) {
-      const { asset, startDay, endDay, yearsBack } = state;
+      const { asset: navAsset, startDay: navStartDay, endDay: navEndDay, yearsBack: navYearsBack } = state;
       
       let updatedState = false;
       
-      if (asset) {
-        setAsset(asset);
+      if (navAsset) {
+        setAsset(navAsset);
         updatedState = true;
       }
       
-      if (startDay && endDay) {
-        setDateRange(startDay, endDay);
+      if (navStartDay && navEndDay) {
+        setDateRange(navStartDay, navEndDay);
         updatedState = true;
       }
       
-      if (yearsBack && typeof yearsBack === 'number') {
-        setYearsBack(yearsBack);
+      if (navYearsBack && typeof navYearsBack === 'number') {
+        setYearsBack(navYearsBack);
         updatedState = true;
       }
       
       // Refresh data if any state was updated
       if (updatedState) {
-        refreshData();
+        // Use a slight delay to ensure context updates are complete
+        setTimeout(() => {
+          refreshData();
+        }, 100);
         
         // Clear the location state to prevent re-applying on refresh
-        window.history.replaceState({}, document.title);
+        navigate(location.pathname, { replace: true });
       }
     }
-  }, [location.state, setAsset, setDateRange, setYearsBack, refreshData]);
+  }, [location, setAsset, setDateRange, setYearsBack, refreshData, navigate]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-200">

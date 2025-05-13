@@ -25,40 +25,70 @@ export default function CumulativeProfitChart() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<CumulativeProfitItem[] | null>(null);
   const [chartData, setChartData] = useState<ChartPoint[]>([]);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const loadData = async () => {
+      if (retryCount > 0) {
+        console.log(`Retrying cumulative profit data fetch (attempt ${retryCount + 1})`);
+      }
+      
       setLoading(true);
       try {
+        console.log(`Fetching cumulative profit for ${asset} from ${startDay} to ${endDay}, yearsBack: ${yearsBack}`);
         const result = await fetchCumulativeProfit(asset, startDay, endDay);
         setData(result);
 
-        // 1) Ordina per anno
+        // 1) Sort by year
         const sorted = [...result].sort((a, b) => a.year - b.year);
 
-        // 2) Calcola cumulato
+        // 2) Calculate cumulative
         let cum = 0;
         const cumulPoints: ChartPoint[] = sorted.map(({ year, cumulative_profit }) => {
-          cum += cumulative_profit;              // accumulo
+          cum += cumulative_profit;              // accumulate
           return { year, cumulative: parseFloat(cum.toFixed(2)) };
         });
 
-        // 3) Filtra gli ultimi `yearsBack` anni
+        // 3) Filter the last `yearsBack` years
         const currentYear = new Date().getFullYear();
         const filtered = cumulPoints.filter(pt => pt.year >= currentYear - yearsBack + 1);
 
         setChartData(filtered);
+        setRetryCount(0); // Reset retry count on success
       } catch (error) {
         console.error("Failed to fetch cumulative profit:", error);
-        toast.error("Failed to load cumulative profit data");
-        setData(null);
+        
+        // Only show toast on final retry
+        if (retryCount >= 2) {
+          toast.error("Failed to load cumulative profit data");
+          setData(null);
+        } else {
+          // Auto retry
+          setRetryCount(prev => prev + 1);
+          return; // Exit early to prevent setLoading(false)
+        }
       } finally {
-        setLoading(false);
+        if (retryCount >= 2 || data) {
+          setLoading(false);
+        }
       }
     };
 
     loadData();
-  }, [asset, startDay, endDay, yearsBack, refreshCounter]);
+    
+    // Add a retry mechanism with setTimeout if we're still retrying
+    let retryTimeout: NodeJS.Timeout | null = null;
+    if (retryCount < 3 && !data) {
+      retryTimeout = setTimeout(() => {
+        loadData();
+      }, 1000); // 1 second retry delay
+    }
+    
+    return () => {
+      if (retryTimeout) clearTimeout(retryTimeout);
+    };
+    
+  }, [asset, startDay, endDay, yearsBack, refreshCounter, retryCount]);
 
   const formatYAxis = (value: number) => `${value.toFixed(2)}%`;
   const formatTooltip = (value: number) => [`${value.toFixed(2)}%`, "Cumulative"];
