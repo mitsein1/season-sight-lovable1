@@ -314,39 +314,101 @@ export const fetchSeasonalityRangeSmoothed = async (
 
 // src/services/api.ts
 
+// src/services/api.ts
+
+// Tipi raw che arrivano dal backend
+export interface ScreenerRaw {
+  Symbol:             string;
+  Instrument:         string | null;
+  "Annualized return": number;
+  "Average return":    number;
+  "Median return":     number;
+  "Pattern Start":     string;
+  "Pattern End":       string;
+  "Cal. Days":         number;
+  "Max Profit":        number;
+  "Max Loss":          number;
+  "No. of Winners":    number;
+  "No. of Trades":     number;
+  "Win Ratio":         string;   // es. "67%"
+  "Std Dev":           number;
+  "Sharpe Ratio":      number;
+}
+
+// Shape che userà ScreenerPage
+export interface ScreenerPattern {
+  rank:               number;
+  symbol:             string;
+  instrument:         string;
+  annualized_return:  number;  // percentuale, es. 5.13
+  average_return:     number;  // percentuale
+  median_return:      number;  // percentuale
+  pattern_start:      string;  // es. "13 May"
+  pattern_end:        string;  // es. "12 Jun"
+  calendar_days:      number;
+  max_profit:         number;  // percentuale
+  max_loss:           number;  // percentuale (negativo se perdita)
+  num_winners:        number;
+  num_trades:         number;
+  win_ratio:          number;  // intero percentuale, es. 67
+  std_dev:            number;  // percentuale
+  sharpe_ratio:       number;
+}
+
 // Screener API function
 export const fetchScreenerResults = async (
-  marketGroup: string,
-  startDateOffset: string,
-  patternLength: number | string,
-  yearsBack: number | string,
-  minWinPct: number | string
+  marketGroup:       string,
+  startDateOffset:   string,
+  patternLength:     number | string,
+  yearsBack:         number | string,
+  minWinPct:         number | string
 ): Promise<ScreenerPattern[]> => {
   const params = new URLSearchParams({
-    market_group:      marketGroup,
-    start_date_offset: startDateOffset,
-    pattern_length:    String(patternLength),
-    years_back:        String(yearsBack),
-    min_win_pct:       String(minWinPct),
-    direction:         "long",
+    market_group:       marketGroup,
+    start_date_offset:  startDateOffset,
+    pattern_length:     String(patternLength),
+    years_back:         String(yearsBack),
+    min_win_pct:        String(minWinPct),
+    direction:          "long",
   });
-
   const url = `${API_BASE_URL}/api/screener?${params.toString()}`;
   console.log("🔍 Fetching screener:", url);
 
-  // GET implicito, nessun header Content-Type
+  // GET implicito
   const res = await fetch(url);
+  // Riceviamo un array di ScreenerRaw
+  const rawData = await handleResponse<ScreenerRaw[]>(res);
 
-  // Supponiamo che l'API restituisca direttamente un array di ScreenerPattern
-  return handleResponse<ScreenerPattern[]>(res);
+  // Mappiamo nel formato che serve alla tabella
+  return rawData.map((item, i) => ({
+    rank:              i + 1,
+    symbol:            item.Symbol,
+    instrument:        item.Instrument || item.Symbol,
+    annualized_return: Number((item["Annualized return"] * 100).toFixed(2)),
+    average_return:    Number((item["Average return"]   * 100).toFixed(2)),
+    median_return:     Number((item["Median return"]    * 100).toFixed(2)),
+    pattern_start:     item["Pattern Start"],
+    pattern_end:       item["Pattern End"],
+    calendar_days:     item["Cal. Days"],
+    max_profit:        Number((item["Max Profit"] * 100).toFixed(2)),
+    max_loss:          Number((item["Max Loss"]   * 100).toFixed(2)),
+    num_winners:       item["No. of Winners"],
+    num_trades:        item["No. of Trades"],
+    win_ratio:         Number(item["Win Ratio"].replace("%", "")),
+    std_dev:           Number((item["Std Dev"]  * 100).toFixed(2)),
+    sharpe_ratio:      Number(item["Sharpe Ratio"].toFixed(2)),
+  }));
 };
 
+// … il resto del file rimane immutato …
+
 export interface MarketGroups {
-  [group: string]: string[]; // es. "NASDAQ 100": ["AAPL", "MSFT"]
+  [group: string]: string[];
 }
 
 export const fetchMarketGroups = async (): Promise<MarketGroups> => {
   const res = await fetch(`${API_BASE_URL}/api/market-groups`);
   return handleResponse<MarketGroups>(res);
 };
+
 
