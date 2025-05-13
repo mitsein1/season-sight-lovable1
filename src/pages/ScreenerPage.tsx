@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { parse, format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -60,14 +59,22 @@ const ScreenerPage = () => {
 
   // Navigate to dashboard with pattern data
   const handleRowClick = (pattern: ScreenerPattern) => {
-    navigate('/', { 
-      state: { 
-        asset: pattern.symbol,
-        startDay: pattern.pattern_start,
-        endDay: pattern.pattern_end,
-        yearsBack: typeof yearsBack === 'number' ? yearsBack : 15
-      } 
-    });
+    // Convert '13 May' and '12 Jun' from "dd MMM" to "MM-dd"
+    const isoStart = format(
+      parse(pattern.pattern_start, "dd MMM", new Date()),
+      "MM-dd"
+    );
+    const isoEnd = format(
+      parse(pattern.pattern_end, "dd MMM", new Date()),
+      "MM-dd"
+    );
+
+    navigate(
+      `/dashboard?asset=${pattern.symbol}` +
+      `&start_day=${isoStart}` +
+      `&end_day=${isoEnd}` +
+      `&years_back=${typeof yearsBack === 'number' ? yearsBack : 15}`
+    );
   };
 
   // Sort data
@@ -131,7 +138,7 @@ const ScreenerPage = () => {
     label: `${i * 5}%` 
   }));
 
-  // Table column headers with sort indicators
+  // Helper to render sort arrows
   const renderSortIndicator = (column: keyof ScreenerPattern) => {
     if (sortState.column !== column) return null;
     return sortState.order === "asc" ? " ↑" : " ↓";
@@ -142,9 +149,9 @@ const ScreenerPage = () => {
       <Navbar />
       <div className="container mx-auto px-4 py-6">
         <h1 className="text-2xl font-bold mb-6">Pattern Screener</h1>
-        
         {/* Filters section */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6 bg-white dark:bg-slate-800 p-4 rounded-lg shadow">
+          {/* Market */}
           <div>
             <label className="text-sm font-medium mb-1 block">Market:</label>
             <Select value={marketGroup} onValueChange={setMarketGroup}>
@@ -160,7 +167,7 @@ const ScreenerPage = () => {
               </SelectContent>
             </Select>
           </div>
-
+          {/* Start Date */}
           <div>
             <label className="text-sm font-medium mb-1 block">Start date:</label>
             <Select value={startDateOffset} onValueChange={setStartDateOffset}>
@@ -176,14 +183,12 @@ const ScreenerPage = () => {
               </SelectContent>
             </Select>
           </div>
-
+          {/* Years Back */}
           <div>
             <label className="text-sm font-medium mb-1 block">Examination period:</label>
             <Select
               value={String(yearsBack)}
-              onValueChange={(value) =>
-                setYearsBack(value === "max" ? "max" : Number(value))
-              }
+              onValueChange={value => setYearsBack(value === 'max' ? 'max' : Number(value))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select years" />
@@ -197,251 +202,52 @@ const ScreenerPage = () => {
               </SelectContent>
             </Select>
           </div>
-
+          {/* Pattern Length */}
           <div>
             <label className="text-sm font-medium mb-1 block">Time Period:</label>
             <Select 
               value={patternLength.toString()} 
-              onValueChange={(value) => setPatternLength(Number(value))}
+              onValueChange={val => setPatternLength(Number(val))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select duration" />
               </SelectTrigger>
               <SelectContent>
-                {durationOptions.map(option => (
-                  <SelectItem key={option.value.toString()} value={option.value.toString()}>
-                    {option.label}
+                {durationOptions.map(opt => (
+                  <SelectItem key={opt.value.toString()} value={opt.value.toString()}>
+                    {opt.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-
+          {/* Min Win % */}
           <div>
             <label className="text-sm font-medium mb-1 block">Filter: Win %</label>
             <Select 
               value={minWinPct.toString()} 
-              onValueChange={(value) => setMinWinPct(Number(value))}
+              onValueChange={val => setMinWinPct(Number(val))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select win %" />
               </SelectTrigger>
               <SelectContent>
-                {winPctOptions.map(option => (
-                  <SelectItem key={option.value.toString()} value={option.value.toString()}>
-                    {option.label}
+                {winPctOptions.map(opt => (
+                  <SelectItem key={opt.value.toString()} value={opt.value.toString()}>
+                    {opt.label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-
+          {/* Direction (Long only) */}
           <div>
             <label className="text-sm font-medium mb-1 block">Direction:</label>
             <div className="flex items-center h-10 space-x-4 bg-gray-100 dark:bg-slate-700 rounded px-3">
               <label className="flex items-center space-x-2">
-                <input 
-                  type="radio" 
-                  checked={true} 
-                  readOnly 
-                  className="form-radio text-blue-600"
-                />
+                <input type="radio" checked readOnly className="form-radio text-blue-600" />
                 <span>Long</span>
               </label>
               <label className="flex items-center space-x-2 opacity-50">
-                <input 
-                  type="radio" 
-                  disabled 
-                  className="form-radio text-blue-600" 
-                />
+                <input type="radio" disabled className="form-radio text-blue-600" />
                 <span>Short</span>
-              </label>
-            </div>
-          </div>
-        </div>
-        
-        {/* Results summary */}
-        {data && (
-          <div className="mb-4">
-            <p className="text-lg font-medium">
-              Found {data.length || 0} patterns
-            </p>
-          </div>
-        )}
-        
-        {/* Loading state */}
-        {isLoading && (
-          <div className="space-y-2">
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-        )}
-        
-        {/* Results table */}
-        {!isLoading && data && (
-          <div className="overflow-x-auto">
-            <Table className="border rounded-md">
-              <TableHeader>
-                <TableRow>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("rank")}
-                  >
-                    Rank{renderSortIndicator("rank")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("symbol")}
-                  >
-                    Symbol{renderSortIndicator("symbol")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("instrument")}
-                  >
-                    Instrument{renderSortIndicator("instrument")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("annualized_return")}
-                  >
-                    Annualized return{renderSortIndicator("annualized_return")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("average_return")}
-                  >
-                    Average return{renderSortIndicator("average_return")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("median_return")}
-                  >
-                    Median return{renderSortIndicator("median_return")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("pattern_start")}
-                  >
-                    Pattern Start{renderSortIndicator("pattern_start")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("pattern_end")}
-                  >
-                    Pattern End{renderSortIndicator("pattern_end")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("calendar_days")}
-                  >
-                    Cal. Days{renderSortIndicator("calendar_days")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("max_profit")}
-                  >
-                    Max Profit{renderSortIndicator("max_profit")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("max_loss")}
-                  >
-                    Max Loss{renderSortIndicator("max_loss")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("num_winners")}
-                  >
-                    No. of Winners{renderSortIndicator("num_winners")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("num_trades")}
-                  >
-                    No. of Trades{renderSortIndicator("num_trades")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("win_ratio")}
-                  >
-                    Win Ratio{renderSortIndicator("win_ratio")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("std_dev")}
-                  >
-                    Std Dev{renderSortIndicator("std_dev")}
-                  </TableHead>
-                  <TableHead 
-                    className="cursor-pointer" 
-                    onClick={() => handleSort("sharpe_ratio")}
-                  >
-                    Sharpe Ratio{renderSortIndicator("sharpe_ratio")}
-                  </TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {sortedData.map((pattern) => (
-                  <TableRow 
-                    key={`${pattern.rank}-${pattern.symbol}`}
-                    className="cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700/50"
-                    onClick={() => handleRowClick(pattern)}
-                  >
-                    <TableCell>{pattern.rank}</TableCell>
-                    <TableCell className="font-medium">{pattern.symbol}</TableCell>
-                    <TableCell>{pattern.instrument}</TableCell>
-                    <TableCell className={pattern.annualized_return > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {typeof pattern.annualized_return === 'number' ? 
-                        `${pattern.annualized_return > 0 ? '+' : ''}${pattern.annualized_return.toFixed(2)}%` : 
-                        pattern.annualized_return}
-                    </TableCell>
-                    <TableCell className={pattern.average_return > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {typeof pattern.average_return === 'number' ?
-                        `${pattern.average_return > 0 ? '+' : ''}${pattern.average_return.toFixed(2)}%` :
-                        pattern.average_return}
-                    </TableCell>
-                    <TableCell className={pattern.median_return > 0 ? 'text-green-600' : 'text-red-600'}>
-                      {typeof pattern.median_return === 'number' ? 
-                        `${pattern.median_return > 0 ? '+' : ''}${pattern.median_return.toFixed(2)}%` : 
-                        pattern.median_return}
-                    </TableCell>
-                    <TableCell>{pattern.pattern_start}</TableCell>
-                    <TableCell>{pattern.pattern_end}</TableCell>
-                    <TableCell>{pattern.calendar_days}</TableCell>
-                    <TableCell className="text-green-600">
-                      {typeof pattern.max_profit === 'number' ? `+${pattern.max_profit.toFixed(2)}%` : pattern.max_profit}
-                    </TableCell>
-                    <TableCell className="text-red-600">
-                      {typeof pattern.max_loss === 'number' ? pattern.max_loss.toFixed(2) + '%' : pattern.max_loss}
-                    </TableCell>
-                    <TableCell>{pattern.num_winners}</TableCell>
-                    <TableCell>{pattern.num_trades}</TableCell>
-                    <TableCell>
-                      {typeof pattern.win_ratio === 'number' ? `${pattern.win_ratio}%` : pattern.win_ratio}
-                    </TableCell>
-                    <TableCell>{pattern.std_dev?.toFixed(2)}%</TableCell>
-                    <TableCell>{pattern.sharpe_ratio?.toFixed(2)}</TableCell>
-                  </TableRow>
-                ))}
-                {(!data || data.length === 0) && (
-                  <TableRow>
-                    <TableCell colSpan={16} className="text-center py-6">
-                      No patterns found with the current filters
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export default ScreenerPage;
