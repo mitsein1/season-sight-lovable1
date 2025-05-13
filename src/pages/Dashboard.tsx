@@ -1,6 +1,5 @@
-
 import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import Navbar from "@/components/Navbar";
 import MainCharts from "@/components/dashboard/MainCharts";
@@ -10,54 +9,43 @@ import StatsSection from "@/components/dashboard/StatsSection";
 import TradeStatsCard from "@/components/TradeStatsCard";
 import AssetInfoCard from "@/components/AssetInfoCard";
 
-interface LocationState {
-  asset?: string;
-  startDay?: string;
-  endDay?: string;
-  yearsBack?: number;
-}
-
 export default function Dashboard() {
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { asset, setAsset, startDay, endDay, setDateRange, yearsBack, setYearsBack, refreshData } = useSeasonax();
-  
-  // Apply navigation state if available
+  // Get query params from URL
+  const [searchParams] = useSearchParams();
+  const {
+    setAsset,
+    setDateRange,
+    setYearsBack,
+    refreshData
+  } = useSeasonax();
+
   useEffect(() => {
-    const state = location.state as LocationState | null;
-    
-    if (state) {
-      const { asset: navAsset, startDay: navStartDay, endDay: navEndDay, yearsBack: navYearsBack } = state;
-      
-      let updatedState = false;
-      
-      if (navAsset) {
-        setAsset(navAsset);
-        updatedState = true;
-      }
-      
-      if (navStartDay && navEndDay) {
-        setDateRange(navStartDay, navEndDay);
-        updatedState = true;
-      }
-      
-      if (navYearsBack && typeof navYearsBack === 'number') {
-        setYearsBack(navYearsBack);
-        updatedState = true;
-      }
-      
-      // Refresh data if any state was updated
-      if (updatedState) {
-        // Use a slight delay to ensure context updates are complete
-        setTimeout(() => {
-          refreshData();
-        }, 100);
-        
-        // Clear the location state to prevent re-applying on refresh
-        navigate(location.pathname, { replace: true });
-      }
+    const assetParam = searchParams.get("asset");
+    const startParam = searchParams.get("start_day");
+    const endParam = searchParams.get("end_day");
+    const yearsParam = searchParams.get("years_back");
+
+    let updated = false;
+
+    if (assetParam) {
+      setAsset(assetParam);
+      updated = true;
     }
-  }, [location, setAsset, setDateRange, setYearsBack, refreshData, navigate]);
+    if (startParam && endParam) {
+      setDateRange(startParam, endParam);
+      updated = true;
+    }
+    if (yearsParam) {
+      // handle "max" or numeric
+      setYearsBack(yearsParam === "max" ? yearsParam : Number(yearsParam));
+      updated = true;
+    }
+
+    if (updated) {
+      // trigger data refresh after context update
+      refreshData();
+    }
+  }, [searchParams, setAsset, setDateRange, setYearsBack, refreshData]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-200">
