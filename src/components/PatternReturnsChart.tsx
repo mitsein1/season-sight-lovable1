@@ -51,16 +51,21 @@ export default function PatternReturnsChart() {
 
   // Costruzione dei dati per il grafico
   const data: PatternReturnsData[] = stats.map(d => {
-    const profit = d.profit_percentage ?? 0;
-    const maxRise = d.max_rise ?? profit;
-    const maxDrop = d.max_drop ?? profit;
+  const profit = d.profit_percentage ?? 0;
+  const maxRise = d.max_rise ?? profit;
+  const maxDrop = d.max_drop ?? profit;
 
-    // spike sopra e sotto
-    const riseExt = Math.max(maxRise - profit, 0);
-    const dropExt = Math.min(maxDrop - profit, 0);
+  return {
+    year: d.year,
+    profitPos: profit > 0 ? profit : 0,
+    profitNeg: profit < 0 ? profit : 0,
+    riseExt: maxRise > profit && profit >= 0 ? maxRise - profit : (maxRise > 0 && profit < 0 ? maxRise : 0),
+    dropExt: maxDrop < profit && profit <= 0 ? maxDrop - profit : (maxDrop < 0 && profit > 0 ? maxDrop : 0),
+    maxRise,
+    maxDrop,
+  };
+});
 
-    return { year: d.year, profit, maxRise, maxDrop, riseExt, dropExt };
-  });
 
   // Formatter asse e tooltip
   const fmtAxis = (v: number) => `${v.toFixed(0)}%`;
