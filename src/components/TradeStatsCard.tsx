@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchTradeStats } from "@/services/api";
@@ -22,6 +21,8 @@ export default function TradeStatsCard() {
     const load = async () => {
       setLoading(true);
       try {
+        // Consistently use the same API call structure with yearsBack
+        console.log(`Fetching trade stats for ${asset} from ${startDay} to ${endDay}, yearsBack: ${yearsBack}`);
         const result = await fetchTradeStats(asset, startDay, endDay, yearsBack);
         setData(result);
       } catch (e) {

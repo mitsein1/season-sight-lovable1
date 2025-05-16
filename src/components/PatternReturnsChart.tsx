@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchPatternStatistics, YearlyStatistic } from "@/services/api";
@@ -41,7 +40,8 @@ export default function PatternReturnsChart() {
       try {
         const data = await fetchPatternStatistics(asset, startDay, endDay);
         const currentYear = new Date().getFullYear();
-        setStats(data.filter(d => d.year >= currentYear - yearsBack));
+        // Include the current year in the filter (> instead of >=)
+        setStats(data.filter(d => d.year > currentYear - yearsBack));
       } catch (err) {
         console.error(err);
         toast.error("Failed to load pattern returns");
@@ -118,12 +118,12 @@ export default function PatternReturnsChart() {
             Loading…
           </div>
         )}
-        {!loading && !data.length && (
+        {!loading && !stats.length && (
           <div className="h-64 flex items-center justify-center text-slate-500 dark:text-slate-400">
             No data
           </div>
         )}
-        {!loading && data.length > 0 && (
+        {!loading && stats.length > 0 && (
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart 

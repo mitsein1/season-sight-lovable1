@@ -62,9 +62,9 @@ export default function CumulativeProfitChart() {
           return { year, cumulative: parseFloat(cum.toFixed(2)) };
         });
 
-        // 3) Filter the last `yearsBack` years
+        // 3) Filter the last `yearsBack` years, INCLUDING the current year
         const currentYear = new Date().getFullYear();
-        const filtered = cumulPoints.filter(pt => pt.year >= currentYear - yearsBack + 1);
+        const filtered = cumulPoints.filter(pt => pt.year > currentYear - yearsBack);
 
         setChartData(filtered);
         setRetryCount(0);

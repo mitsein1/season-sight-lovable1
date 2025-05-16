@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useSeasonax } from "@/context/SeasonaxContext";
 import { fetchPatternStatistics, YearlyStatistic } from "@/services/api";
@@ -41,8 +40,9 @@ export default function StatisticsTable() {
     }
 
     const currentYear = new Date().getFullYear();
+    // Changed to include current year (> instead of >=)
     const filteredByYears = data.filter(item => {
-      return item.year >= (currentYear - yearsBack);
+      return item.year > currentYear - yearsBack;
     });
 
     setFilteredData(filteredByYears);
