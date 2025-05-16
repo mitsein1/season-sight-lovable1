@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from "react";
 import { parse, format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -38,6 +39,7 @@ const safeToFixed = (value: number | undefined | null, digits: number = 2): stri
 
 export default function ScreenerPage() {
   const navigate = useNavigate();
+  const currentYear = new Date().getFullYear();
 
   // Filter state
   const [marketGroup, setMarketGroup] = useState("NASDAQ 100");
@@ -47,11 +49,17 @@ export default function ScreenerPage() {
   const [minWinPct, setMinWinPct] = useState(55);
   const [sortState, setSortState] = useState<SortState>({ column: "rank", order: "asc" });
 
+  // Convert yearsBack to API-compatible value
+  const apiYearsBack = useMemo(() => {
+    // If it's a number, return it; otherwise for "max", return a high number
+    return typeof yearsBack === 'number' ? yearsBack : 100;
+  }, [yearsBack]);
+
   // Fetch data
   const { data, isLoading, error } = useQuery({
-    queryKey: ["screener", marketGroup, startDateOffset, patternLength, yearsBack, minWinPct],
+    queryKey: ["screener", marketGroup, startDateOffset, patternLength, apiYearsBack, minWinPct],
     queryFn: () =>
-      fetchScreenerResults(marketGroup, startDateOffset, patternLength, yearsBack, minWinPct),
+      fetchScreenerResults(marketGroup, startDateOffset, patternLength, apiYearsBack, minWinPct),
   });
 
   useEffect(() => {
@@ -68,12 +76,27 @@ export default function ScreenerPage() {
     }));
   };
 
-  const sortedData = useMemo(() => {
+  // Filter patterns to ensure they have sufficient historical data
+  const filteredData = useMemo(() => {
     if (!data) return [];
-    return [...data].sort((a, b) => {
+    
+    return data.filter(pattern => {
+      const minYears = typeof yearsBack === 'number' ? yearsBack : 15;
+      
+      // Filter out patterns with too few trades compared to the examination period
+      // Only include patterns where num_trades is reasonably proportional to years_back
+      return pattern.num_trades >= Math.min(minYears / 5, 3); // At least 3 trades or 1 trade per 5 years
+    });
+  }, [data, yearsBack]);
+
+  const sortedData = useMemo(() => {
+    if (!filteredData.length) return [];
+    
+    return [...filteredData].sort((a, b) => {
       if (!sortState.column) return 0;
       const aVal = a[sortState.column];
       const bVal = b[sortState.column];
+      
       if (typeof aVal === "number" && typeof bVal === "number") {
         return sortState.order === "asc" ? aVal - bVal : bVal - aVal;
       }
@@ -84,11 +107,11 @@ export default function ScreenerPage() {
       }
       return 0;
     });
-  }, [data, sortState]);
+  }, [filteredData, sortState]);
 
   const handleRowClick = (pattern: ScreenerPattern) => {
-    // Fixed: Use the exact same date format from pattern_start and pattern_end
     try {
+      // Parse dates properly
       const isoStart = format(
         parse(pattern.pattern_start, "dd MMM", new Date()),
         "MM-dd"
@@ -98,7 +121,7 @@ export default function ScreenerPage() {
         "MM-dd"
       );
 
-      // Use the same yearsBack value from the screener
+      // Pass the exact same years_back value from the screener to maintain consistency
       const ybVal = typeof yearsBack === "number" ? yearsBack : 15;
       
       console.log(`Navigating to dashboard with params:`, {
@@ -106,7 +129,7 @@ export default function ScreenerPage() {
         start_day: isoStart,
         end_day: isoEnd,
         years_back: ybVal,
-        instrument: pattern.instrument // Pass instrument name
+        instrument: pattern.instrument
       });
       
       navigate(
@@ -263,7 +286,7 @@ export default function ScreenerPage() {
               <Skeleton className="h-8 w-full mb-4" />
               <Skeleton className="h-8 w-full" />
             </div>
-          ) : data && data.length > 0 ? (
+          ) : filteredData && filteredData.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>

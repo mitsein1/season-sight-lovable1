@@ -46,18 +46,27 @@ export default function Dashboard() {
     }
 
     // If years_back is a valid number, set it;
-    // if it's "max" or not parseable, ignore it (maintain the default)
-    if (yb && yb !== "max") {
-      const num = Number(yb);
-      if (!isNaN(num) && num !== yearsBack) {
-        console.log(`Dashboard: Setting years back to ${num} (was ${yearsBack})`);
-        setYearsBack(num);
-        updated = true;
+    // Handle 'max' value by using a default high number
+    if (yb) {
+      if (yb === "max") {
+        const defaultMax = 100; // Use a high number for "max"
+        if (yearsBack !== defaultMax) {
+          console.log(`Dashboard: Setting years back to max (100) (was ${yearsBack})`);
+          setYearsBack(defaultMax);
+          updated = true;
+        }
+      } else {
+        const num = Number(yb);
+        if (!isNaN(num) && num !== yearsBack) {
+          console.log(`Dashboard: Setting years back to ${num} (was ${yearsBack})`);
+          setYearsBack(num);
+          updated = true;
+        }
       }
     }
 
     if (updated) {
-      // Force refetch on widgets
+      // Force refetch on widgets with a slight delay to ensure context updates first
       console.log("Dashboard: Refreshing data due to URL parameter changes");
       setTimeout(refreshData, 50);
     }

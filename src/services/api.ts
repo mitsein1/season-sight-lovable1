@@ -404,6 +404,15 @@ export const fetchScreenerResults = async (
   yearsBack:         number | string,
   minWinPct:         number | string
 ): Promise<ScreenerPattern[]> => {
+  // Log the parameters for debugging
+  console.log("Screener parameters:", {
+    marketGroup, 
+    startDateOffset, 
+    patternLength, 
+    yearsBack, 
+    minWinPct
+  });
+  
   const params = new URLSearchParams({
     market_group:       marketGroup,
     start_date_offset:  startDateOffset,
@@ -415,13 +424,13 @@ export const fetchScreenerResults = async (
   const url = `${API_BASE_URL}/api/screener?${params.toString()}`;
   console.log("🔍 Fetching screener:", url);
 
-  // GET implicito
+  // GET request
   const res = await fetch(url);
-  // Riceviamo un array di ScreenerRaw
+  // Receive ScreenerRaw array
   const rawData = await handleResponse<ScreenerRaw[]>(res);
 
-  // Mappiamo nel formato che serve alla tabella
-  return rawData.map((item, i) => ({
+  // Map to the format needed by the table
+  const mappedData = rawData.map((item, i) => ({
     rank:              i + 1,
     symbol:            item.Symbol,
     instrument:        item.Instrument || item.Symbol,
@@ -439,6 +448,10 @@ export const fetchScreenerResults = async (
     std_dev:           Number((item["Std Dev"]  * 100).toFixed(2)),
     sharpe_ratio:      Number(item["Sharpe Ratio"].toFixed(2)),
   }));
+
+  console.log(`Received ${mappedData.length} patterns from API`);
+  
+  return mappedData;
 };
 
 // … il resto del file rimane immutato …
@@ -451,5 +464,3 @@ export const fetchMarketGroups = async (): Promise<MarketGroups> => {
   const res = await fetch(`${API_BASE_URL}/api/market-groups`);
   return handleResponse<MarketGroups>(res);
 };
-
-
