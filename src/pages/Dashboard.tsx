@@ -1,3 +1,4 @@
+
 // src/pages/Dashboard.tsx
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -28,31 +29,36 @@ export default function Dashboard() {
     const sd = searchParams.get("start_day");
     const ed = searchParams.get("end_day");
     const yb = searchParams.get("years_back");
+    // We don't need to handle the instrument param here as it's used directly in AssetInfoCard
 
     let updated = false;
 
     if (a && a !== asset) {
+      console.log(`Dashboard: Setting asset to ${a} (was ${asset})`);
       setAsset(a);
       updated = true;
     }
 
     if (sd && ed && (sd !== startDay || ed !== endDay)) {
+      console.log(`Dashboard: Setting date range to ${sd}-${ed} (was ${startDay}-${endDay})`);
       setDateRange(sd, ed);
       updated = true;
     }
 
-    // Se years_back è un numero valido, lo settiamo;
-    // se è "max" o non è parseable, lo ignoriamo (manteniamo il default)
+    // If years_back is a valid number, set it;
+    // if it's "max" or not parseable, ignore it (maintain the default)
     if (yb && yb !== "max") {
       const num = Number(yb);
       if (!isNaN(num) && num !== yearsBack) {
+        console.log(`Dashboard: Setting years back to ${num} (was ${yearsBack})`);
         setYearsBack(num);
         updated = true;
       }
     }
 
     if (updated) {
-      // Forza refetch sui widget
+      // Force refetch on widgets
+      console.log("Dashboard: Refreshing data due to URL parameter changes");
       setTimeout(refreshData, 50);
     }
   }, [

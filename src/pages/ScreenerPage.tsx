@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo, useEffect } from "react";
 import { parse, format } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
@@ -88,21 +87,39 @@ export default function ScreenerPage() {
   }, [data, sortState]);
 
   const handleRowClick = (pattern: ScreenerPattern) => {
-    const isoStart = format(
-      parse(pattern.pattern_start, "dd MMM", new Date()),
-      "MM-dd"
-    );
-    const isoEnd = format(
-      parse(pattern.pattern_end, "dd MMM", new Date()),
-      "MM-dd"
-    );
-    const ybVal = typeof yearsBack === "number" ? yearsBack : 15;
-    navigate(
-      `/dashboard?asset=${pattern.symbol}` +
-        `&start_day=${isoStart}` +
-        `&end_day=${isoEnd}` +
-        `&years_back=${ybVal}`
-    );
+    // Fixed: Use the exact same date format from pattern_start and pattern_end
+    try {
+      const isoStart = format(
+        parse(pattern.pattern_start, "dd MMM", new Date()),
+        "MM-dd"
+      );
+      const isoEnd = format(
+        parse(pattern.pattern_end, "dd MMM", new Date()),
+        "MM-dd"
+      );
+
+      // Use the same yearsBack value from the screener
+      const ybVal = typeof yearsBack === "number" ? yearsBack : 15;
+      
+      console.log(`Navigating to dashboard with params:`, {
+        asset: pattern.symbol,
+        start_day: isoStart,
+        end_day: isoEnd,
+        years_back: ybVal,
+        instrument: pattern.instrument // Pass instrument name
+      });
+      
+      navigate(
+        `/dashboard?asset=${pattern.symbol}` +
+          `&start_day=${isoStart}` +
+          `&end_day=${isoEnd}` +
+          `&years_back=${ybVal}` +
+          `&instrument=${encodeURIComponent(pattern.instrument || '')}`
+      );
+    } catch (err) {
+      console.error("Navigation error:", err);
+      toast.error("Error navigating to dashboard");
+    }
   };
 
   // Options
